@@ -9,6 +9,7 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     minHeight: 600,
     minWidth: 900,
+    useContentSize: true,
   })
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)

@@ -52,7 +52,7 @@
               "entryPoints": [
                 {
                   "html": "./public/index.html",
-                  "js": "./src/app.tsx",
+                  "js": "./src/index.tsx",
                   "name": "main_window"
                 }
               ]
@@ -89,7 +89,11 @@
     "typescript": "^3.7.0"
   },
   "dependencies": {
+    "@chakra-ui/core": "^0.8.0",
+    "@emotion/core": "^10.0.35",
+    "@emotion/styled": "^10.0.27",
     "electron-squirrel-startup": "^1.0.0",
+    "emotion-theming": "^10.0.27",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }
