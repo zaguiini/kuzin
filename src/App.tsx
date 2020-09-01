@@ -4,8 +4,9 @@ import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
 import { MessageTray } from './components/MessageTray/MessageTray'
-import { ToolBar, ToolBarAction } from './components/ToolBar/ToolBar'
+import { ToolBar } from './components/ToolBar/ToolBar'
 import { TeamModal } from './components/TeamModal'
+import { useToolBarActions } from './hooks/useToolBarActions'
 
 const defaultMessages = [
   {
@@ -37,22 +38,10 @@ const defaultMessages = [
 export const App = () => {
   const [path] = useState('/Users/zaguini/tuamae/gosta.txt')
   const [isTeamModalOpen, setTeamModalOpen] = useState(false)
+  const onToolBarClick = useToolBarActions({
+    onTeamClick: () => setTeamModalOpen(true),
+  })
   const [messages] = useState(defaultMessages)
-
-  const handleToolBarClick = (action: ToolBarAction) => {
-    return {
-      new: () => {},
-      open: () => {},
-      save: () => {},
-      copy: () => {},
-      paste: () => {},
-      cut: () => {},
-      build: () => {},
-      team: () => {
-        setTeamModalOpen(true)
-      },
-    }[action]()
-  }
 
   return (
     <>
@@ -63,7 +52,7 @@ export const App = () => {
           borderBottomColor="gray.600"
           minHeight={70}
         >
-          <ToolBar onClick={handleToolBarClick} />
+          <ToolBar onClick={onToolBarClick} />
         </Box>
         <Box flex={1} display="flex">
           <Editor />
