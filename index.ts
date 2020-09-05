@@ -15,7 +15,10 @@ const createWindow = () => {
     },
   })
 
-  mainWindow.setMenu(null)
+  if (process.env.NODE_ENV !== "development"){
+    mainWindow.setMenu(null)
+  }
+  
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
 
   ipcMain.on(

@@ -1,7 +1,13 @@
-import React from 'react'
-import { Button, ButtonProps } from '@chakra-ui/core'
+import React, { ComponentType } from 'react'
+import { Button, ButtonProps, Box } from '@chakra-ui/core'
+
+interface ToolBarButtonProps extends ButtonProps {
+  icon: ComponentType
+}
 
 export const ToolBarButton = ({
+  icon,
+  children,
   outline = 'none',
   size = 'md',
   flex = 1,
@@ -9,9 +15,13 @@ export const ToolBarButton = ({
   bg = 'gray.700',
   color = 'gray.300',
   ...props
-}: ButtonProps) => {
+}: ToolBarButtonProps) => {
   return (
     <Button
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      flexDirection="column"
       size={size}
       color={color}
       bg={bg}
@@ -25,6 +35,6 @@ export const ToolBarButton = ({
         outline
       }}
       {...props}
-    />
+    > <Box as={icon} marginBottom={1} />{children}</Button>
   )
 }
