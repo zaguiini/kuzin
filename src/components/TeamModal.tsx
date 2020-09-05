@@ -23,7 +23,7 @@ export const TeamModal = ({ isOpen, onClose }: TeamModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent bg="gray.800">
-        <Text>
+        <Text as="span">
           <ModalHeader>Equipe</ModalHeader>
           <ModalCloseButton />
           <ModalBody>

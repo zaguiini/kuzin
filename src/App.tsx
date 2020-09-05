@@ -1,47 +1,65 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Box } from '@chakra-ui/core'
 
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
-import { MessageTray } from './components/MessageTray/MessageTray'
-import { ToolBar } from './components/ToolBar/ToolBar'
+import { MessageTray, Message } from './components/MessageTray/MessageTray'
+import { ToolBar, ToolBarAction } from './components/ToolBar/ToolBar'
 import { TeamModal } from './components/TeamModal'
-import { useToolBarActions } from './hooks/useToolBarActions'
-
-const defaultMessages = [
-  {
-    level: 'warning' as const,
-    text: 'Use camisinha',
-  },
-  {
-    level: 'error' as const,
-    text: 'Bucetaram minha mente',
-  },
-  {
-    level: 'success' as const,
-    text: 'deu boa carai',
-  },
-  {
-    level: 'warning' as const,
-    text: 'Use camisinha',
-  },
-  {
-    level: 'error' as const,
-    text: 'Bucetaram minha mente',
-  },
-  {
-    level: 'success' as const,
-    text: 'deu boa carai',
-  },
-]
+import MonacoEditor from 'react-monaco-editor'
 
 export const App = () => {
   const [path] = useState('/Users/zaguini/tuamae/gosta.txt')
   const [isTeamModalOpen, setTeamModalOpen] = useState(false)
-  const onToolBarClick = useToolBarActions({
-    onTeamClick: () => setTeamModalOpen(true),
-  })
-  const [messages] = useState(defaultMessages)
+  const editor = useRef<MonacoEditor>(null)
+
+  const handleToolBarClick = (action: ToolBarAction) => {
+    const hasSelection = () => {
+      const selection = editor.current?.editor?.getSelection()
+
+      if (selection) {
+        const isSameLine = selection.startLineNumber === selection.endLineNumber
+        const isSameColumn = selection.startColumn === selection.endColumn
+
+        return !isSameColumn || !isSameLine
+      }
+    }
+
+    return {
+      new: () => {},
+      open: () => {},
+      save: () => {},
+      copy: () => {
+        if (editor.current?.editor && hasSelection()) {
+          editor.current.editor.trigger(
+            'source',
+            'editor.action.clipboardCopyAction',
+            null
+          )
+        }
+      },
+      paste: () => {
+        if (editor.current?.editor) {
+          editor.current.editor.focus()
+          // https://github.com/microsoft/monaco-editor/issues/999
+          document.execCommand('paste')
+        }
+      },
+      cut: () => {
+        if (editor.current?.editor && hasSelection()) {
+          editor.current.editor.trigger(
+            'source',
+            'editor.action.clipboardCutAction',
+            null
+          )
+        }
+      },
+      build: () => {},
+      team: () => setTeamModalOpen(true),
+    }[action]()
+  }
+
+  const [messages] = useState<Message[]>([])
 
   return (
     <>
@@ -52,10 +70,10 @@ export const App = () => {
           borderBottomColor="gray.600"
           minHeight={70}
         >
-          <ToolBar onClick={onToolBarClick} />
+          <ToolBar onClick={handleToolBarClick} />
         </Box>
         <Box flex={1} display="flex">
-          <Editor />
+          <Editor ref={editor} />
         </Box>
         <Box
           height={100}

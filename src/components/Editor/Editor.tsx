@@ -1,17 +1,15 @@
-import React, { useRef } from 'react'
+import React, { useRef, forwardRef } from 'react'
 import MonacoEditor from 'react-monaco-editor'
 import { useResizeKey } from 'src/hooks/useResizeKey'
 
-export const Editor = () => {
-  const editor = useRef<MonacoEditor>(null)
+export const Editor = forwardRef<MonacoEditor>((_, ref) => {
   const currentText = useRef('')
   const resizeKey = useResizeKey()
 
-  console.log(editor.current)
-
   return (
     <MonacoEditor
-      ref={editor}
+      ref={ref}
+      options={{ copyWithSyntaxHighlighting: false }}
       onChange={(text) => {
         currentText.current = text
       }}
@@ -20,4 +18,6 @@ export const Editor = () => {
       theme="vs-dark"
     />
   )
-}
+})
+
+Editor.displayName = 'Editor'

@@ -4,7 +4,7 @@ import { defaultTextColor } from '../Text'
 
 type Level = 'warning' | 'error' | 'success'
 
-interface Message {
+export interface Message {
   level: Level
   text: string
 }
