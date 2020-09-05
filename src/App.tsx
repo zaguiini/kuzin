@@ -1,86 +1,164 @@
-import React, { useState, useRef, MouseEvent, useEffect } from 'react'
-import electron from 'electron'
+import React, { useState, MouseEvent, useEffect, useMemo } from 'react'
+import { ipcRenderer } from 'electron'
+import fs from 'fs'
+import { promisify } from 'util'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
 import { MessageTray } from './components/MessageTray/MessageTray'
 import { ToolBar, ToolBarAction } from './components/ToolBar/ToolBar'
 import { TeamModal } from './components/TeamModal'
-import MonacoEditor from 'react-monaco-editor'
 import { useMessageTray } from './components/MessageTray/useMessageTray'
 import { IpcRendererEvent } from 'electron'
+import { useEditor } from './components/Editor/useEditor'
 
-const hasSelection = (editor: Exclude<MonacoEditor['editor'], undefined>) => {
-  const selection = editor.getSelection()
+const readFile = promisify(fs.readFile)
+const writeFile = promisify(fs.writeFile)
 
-  if (selection) {
-    const isSameLine = selection.startLineNumber === selection.endLineNumber
-    const isSameColumn = selection.startColumn === selection.endColumn
-
-    return !isSameColumn || !isSameLine
-  }
+const isFileManagementAction = (x: UserAction): x is FileManagementAction => {
+  return x.context === 'file-management'
 }
 
-export const App = () => {
-  const [path] = useState('/Users/zaguini/tuamae/gosta.txt')
-  const [isTeamModalOpen, setTeamModalOpen] = useState(false)
-  const editor = useRef<MonacoEditor>(null)
+const UNSAVED_CHANGES_WARNING =
+  'Você tem certeza? Perderá todas as alterações não salvas.'
 
-  const { messages, reportMessage, clearMessages } = useMessageTray()
+export const App = () => {
+  const [currentOpenFilePath, setCurrentOpenFilePath] = useState<
+    string | undefined
+  >()
+  const [currentOpenFileContent, setCurrentOpenFileContent] = useState('')
+  const [editorContent, setEditorContent] = useState('')
+  const [isTeamModalOpen, setTeamModalOpen] = useState(false)
+
+  const hasChanges = useMemo(() => {
+    return currentOpenFileContent !== editorContent
+  }, [currentOpenFileContent, editorContent])
+
+  const {
+    editorRef,
+    copyFromEditor,
+    pasteToEditor,
+    cutFromEditor,
+  } = useEditor()
+  const { messages, reportMessageToTray, clearMessageTray } = useMessageTray()
+
+  const handleNewFileRequest = () => {
+    setCurrentOpenFilePath(undefined)
+    setCurrentOpenFileContent('')
+    setEditorContent('')
+    clearMessageTray()
+  }
+
+  const handleOpenFileRequest = (filePath: string) => {
+    readFile(filePath)
+      .then((file) => {
+        setCurrentOpenFilePath(filePath)
+        setCurrentOpenFileContent(file.toString())
+        setEditorContent(file.toString())
+        clearMessageTray()
+      })
+      .catch(() => {
+        reportMessageToTray({
+          level: 'error',
+          text: 'Falha em ler arquivo',
+        })
+      })
+  }
 
   useEffect(() => {
     const handleContextMenuAction = (
       _: IpcRendererEvent,
-      { context, action }: ContextMenuAction
+      action: UserAction
     ) => {
-      if (context === 'message-tray' && action === 'clear-tray') {
-        clearMessages()
+      if (action.context === 'message-tray' && action.action === 'clear-tray') {
+        clearMessageTray()
+      }
+
+      if (isFileManagementAction(action) && action.action === 'open-file') {
+        if (action.filePath) {
+          handleOpenFileRequest(action.filePath)
+        } else {
+          ipcRenderer.send('open-file-request')
+        }
+      }
+
+      if (
+        isFileManagementAction(action) &&
+        action.action === 'save-file' &&
+        action.filePath
+      ) {
+        writeFile(action.filePath, editorContent)
+          .then(() => {
+            setCurrentOpenFilePath(action.filePath)
+            setCurrentOpenFileContent(editorContent)
+          })
+          .catch(() => {
+            reportMessageToTray({
+              level: 'error',
+              text: 'Falha em salvar arquivo',
+            })
+          })
       }
     }
 
-    electron.ipcRenderer.on('context-menu-action', handleContextMenuAction)
+    ipcRenderer.on('user-action', handleContextMenuAction)
 
     return () => {
-      electron.ipcRenderer.off('context-menu-action', handleContextMenuAction)
+      ipcRenderer.off('user-action', handleContextMenuAction)
     }
-  }, [clearMessages])
+  })
 
   const handleToolBarClick = (action: ToolBarAction) => {
     return {
       new: () => {
-        clearMessages()
+        if (hasChanges) {
+          ipcRenderer.send('show-warning', {
+            message: UNSAVED_CHANGES_WARNING,
+            action: {
+              action: 'new-file',
+              context: 'file-management',
+            },
+          })
+        } else {
+          handleNewFileRequest()
+        }
       },
       open: () => {
-        clearMessages()
-      },
-      save: () => {},
-      copy: () => {
-        if (editor.current?.editor && hasSelection(editor.current.editor)) {
-          editor.current.editor.trigger(
-            'source',
-            'editor.action.clipboardCopyAction',
-            null
-          )
+        if (hasChanges) {
+          ipcRenderer.send('show-warning', {
+            message: UNSAVED_CHANGES_WARNING,
+            action: {
+              action: 'open-file',
+              context: 'file-management',
+            },
+          })
+        } else {
+          ipcRenderer.send('open-file-request')
         }
       },
-      paste: () => {
-        if (editor.current?.editor) {
-          editor.current.editor.focus()
-          // https://github.com/microsoft/monaco-editor/issues/999
-          document.execCommand('paste')
+      save: () => {
+        if (!hasChanges) return
+
+        if (!currentOpenFilePath) {
+          return ipcRenderer.send('save-file-request')
         }
+
+        writeFile(currentOpenFilePath, editorContent)
+          .then(() => {
+            setCurrentOpenFileContent(editorContent)
+          })
+          .catch(() => {
+            reportMessageToTray({
+              level: 'error',
+              text: 'Falha em salvar arquivo',
+            })
+          })
       },
-      cut: () => {
-        if (editor.current?.editor && hasSelection(editor.current.editor)) {
-          editor.current.editor.trigger(
-            'source',
-            'editor.action.clipboardCutAction',
-            null
-          )
-        }
-      },
+      copy: copyFromEditor,
+      paste: pasteToEditor,
+      cut: cutFromEditor,
       build: () => {
-        reportMessage({
+        reportMessageToTray({
           level: 'warning',
           text: 'Compilação de programas ainda não foi implementada',
         })
@@ -90,7 +168,7 @@ export const App = () => {
   }
 
   const handleClearMessagesRequest = (e: MouseEvent) => {
-    electron.ipcRenderer.send('message-tray-context-menu', {
+    ipcRenderer.send('message-tray-context-menu', {
       x: e.clientX,
       y: e.clientY,
     })
@@ -108,7 +186,11 @@ export const App = () => {
           <ToolBar onClick={handleToolBarClick} />
         </Box>
         <Box flex={1} display="flex">
-          <Editor ref={editor} />
+          <Editor
+            ref={editorRef}
+            value={editorContent}
+            onChange={setEditorContent}
+          />
         </Box>
         <Box
           height={100}
@@ -125,7 +207,10 @@ export const App = () => {
           <MessageTray messages={messages} />
         </Box>
         <Box height={30} display="flex" bg="gray.800" padding={2}>
-          <StatusBar path={path} />
+          <StatusBar
+            currentOpenFilePath={currentOpenFilePath}
+            hasChanges={hasChanges}
+          />
         </Box>
       </Box>
       <TeamModal

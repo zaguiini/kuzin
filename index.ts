@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, MenuItem } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, dialog } from 'electron'
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 
 if (require('electron-squirrel-startup')) {
@@ -17,7 +17,57 @@ const createWindow = () => {
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
 
-  ipcMain.on('message-tray-context-menu', function (event, args) {
+  ipcMain.on(
+    'show-warning',
+    async (event, { message, action }: ShowWarningInput) => {
+      const { response } = await dialog.showMessageBox({
+        buttons: ['Sim', 'Não'],
+        message,
+      })
+
+      if (response === 0) {
+        event.sender.send('user-action', action)
+      }
+    }
+  )
+
+  ipcMain.on('open-file-request', async (event) => {
+    const {
+      canceled,
+      filePaths: [filePath],
+    } = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'Kuzin Files', extensions: ['.txt'] }],
+    })
+
+    if (canceled) return
+
+    const openFileAction: FileManagementAction = {
+      action: 'open-file',
+      filePath,
+      context: 'file-management',
+    }
+
+    event.sender.send('user-action', openFileAction)
+  })
+
+  ipcMain.on('save-file-request', async (event) => {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      filters: [{ name: 'Kuzin Files', extensions: ['.txt'] }],
+    })
+
+    if (canceled) return
+
+    const saveFileAction: FileManagementAction = {
+      action: 'save-file',
+      filePath: filePath!,
+      context: 'file-management',
+    }
+
+    event.sender.send('user-action', saveFileAction)
+  })
+
+  ipcMain.on('message-tray-context-menu', (event, args) => {
     const menu = new Menu()
 
     menu.append(
@@ -29,7 +79,7 @@ const createWindow = () => {
             context: 'message-tray',
           }
 
-          event.sender.send('context-menu-action', contextMenuAction)
+          event.sender.send('user-action', contextMenuAction)
         },
       })
     )
