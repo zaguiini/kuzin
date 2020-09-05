@@ -15,6 +15,7 @@ const createWindow = () => {
     },
   })
 
+  mainWindow.setMenu(null)
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
 
   ipcMain.on(
@@ -37,7 +38,7 @@ const createWindow = () => {
       filePaths: [filePath],
     } = await dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'Kuzin Files', extensions: ['.txt'] }],
+      filters: [{ name: 'Kuzin Files', extensions: ['txt'] }],
     })
 
     if (canceled) return
@@ -53,7 +54,7 @@ const createWindow = () => {
 
   ipcMain.on('save-file-request', async (event) => {
     const { canceled, filePath } = await dialog.showSaveDialog({
-      filters: [{ name: 'Kuzin Files', extensions: ['.txt'] }],
+      filters: [{ name: 'Kuzin Files', extensions: ['txt'] }],
     })
 
     if (canceled) return

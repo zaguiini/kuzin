@@ -73,6 +73,9 @@ export const App = () => {
       if (action.context === 'message-tray' && action.action === 'clear-tray') {
         clearMessageTray()
       }
+      if (isFileManagementAction(action) && action.action === "new-file"){
+        handleNewFileRequest()
+      }
 
       if (isFileManagementAction(action) && action.action === 'open-file') {
         if (action.filePath) {

@@ -2,6 +2,7 @@ import React from 'react'
 import { Button, ButtonProps } from '@chakra-ui/core'
 
 export const ToolBarButton = ({
+  outline = 'none',
   size = 'md',
   flex = 1,
   height = '70px',
@@ -18,6 +19,10 @@ export const ToolBarButton = ({
       height={height}
       _hover={{
         bg: 'gray.800',
+      }}
+      _focus={{
+        bg: 'gray.800',
+        outline
       }}
       {...props}
     />
