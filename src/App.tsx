@@ -1,36 +1,61 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, MouseEvent, useEffect } from 'react'
+import electron from 'electron'
 import { Box } from '@chakra-ui/core'
-
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
-import { MessageTray, Message } from './components/MessageTray/MessageTray'
+import { MessageTray } from './components/MessageTray/MessageTray'
 import { ToolBar, ToolBarAction } from './components/ToolBar/ToolBar'
 import { TeamModal } from './components/TeamModal'
 import MonacoEditor from 'react-monaco-editor'
+import { useMessageTray } from './components/MessageTray/useMessageTray'
+import { IpcRendererEvent } from 'electron'
+
+const hasSelection = (editor: Exclude<MonacoEditor['editor'], undefined>) => {
+  const selection = editor.getSelection()
+
+  if (selection) {
+    const isSameLine = selection.startLineNumber === selection.endLineNumber
+    const isSameColumn = selection.startColumn === selection.endColumn
+
+    return !isSameColumn || !isSameLine
+  }
+}
 
 export const App = () => {
   const [path] = useState('/Users/zaguini/tuamae/gosta.txt')
   const [isTeamModalOpen, setTeamModalOpen] = useState(false)
   const editor = useRef<MonacoEditor>(null)
 
-  const handleToolBarClick = (action: ToolBarAction) => {
-    const hasSelection = () => {
-      const selection = editor.current?.editor?.getSelection()
+  const { messages, reportMessage, clearMessages } = useMessageTray()
 
-      if (selection) {
-        const isSameLine = selection.startLineNumber === selection.endLineNumber
-        const isSameColumn = selection.startColumn === selection.endColumn
-
-        return !isSameColumn || !isSameLine
+  useEffect(() => {
+    const handleContextMenuAction = (
+      _: IpcRendererEvent,
+      { context, action }: ContextMenuAction
+    ) => {
+      if (context === 'message-tray' && action === 'clear-tray') {
+        clearMessages()
       }
     }
 
+    electron.ipcRenderer.on('context-menu-action', handleContextMenuAction)
+
+    return () => {
+      electron.ipcRenderer.off('context-menu-action', handleContextMenuAction)
+    }
+  }, [clearMessages])
+
+  const handleToolBarClick = (action: ToolBarAction) => {
     return {
-      new: () => {},
-      open: () => {},
+      new: () => {
+        clearMessages()
+      },
+      open: () => {
+        clearMessages()
+      },
       save: () => {},
       copy: () => {
-        if (editor.current?.editor && hasSelection()) {
+        if (editor.current?.editor && hasSelection(editor.current.editor)) {
           editor.current.editor.trigger(
             'source',
             'editor.action.clipboardCopyAction',
@@ -46,7 +71,7 @@ export const App = () => {
         }
       },
       cut: () => {
-        if (editor.current?.editor && hasSelection()) {
+        if (editor.current?.editor && hasSelection(editor.current.editor)) {
           editor.current.editor.trigger(
             'source',
             'editor.action.clipboardCutAction',
@@ -54,12 +79,22 @@ export const App = () => {
           )
         }
       },
-      build: () => {},
+      build: () => {
+        reportMessage({
+          level: 'warning',
+          text: 'Compilação de programas ainda não foi implementada',
+        })
+      },
       team: () => setTeamModalOpen(true),
     }[action]()
   }
 
-  const [messages] = useState<Message[]>([])
+  const handleClearMessagesRequest = (e: MouseEvent) => {
+    electron.ipcRenderer.send('message-tray-context-menu', {
+      x: e.clientX,
+      y: e.clientY,
+    })
+  }
 
   return (
     <>
@@ -85,6 +120,7 @@ export const App = () => {
           borderBottomWidth={5}
           borderColor="gray.900"
           borderStyle="solid"
+          onContextMenu={handleClearMessagesRequest}
         >
           <MessageTray messages={messages} />
         </Box>

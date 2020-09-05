@@ -5,6 +5,7 @@ import { defaultTextColor } from '../Text'
 type Level = 'warning' | 'error' | 'success'
 
 export interface Message {
+  id: string
   level: Level
   text: string
 }
@@ -30,8 +31,8 @@ const getIconColor = (level: Level) =>
 export const MessageTray = ({ messages }: MessageTrayProps) => {
   return (
     <List spacing={2}>
-      {messages.map(({ level, text }) => (
-        <ListItem key={text} color={defaultTextColor} fontSize="sm">
+      {messages.map(({ id, level, text }) => (
+        <ListItem key={id} color={defaultTextColor} fontSize="sm">
           <ListIcon icon={getIcon(level)} color={getIconColor(level)} />
           {text}
         </ListItem>

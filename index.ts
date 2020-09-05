@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, MenuItem } from 'electron'
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 
 if (require('electron-squirrel-startup')) {
@@ -10,9 +10,36 @@ const createWindow = () => {
     minHeight: 600,
     minWidth: 900,
     useContentSize: true,
+    webPreferences: {
+      nodeIntegration: true,
+    },
   })
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
+
+  ipcMain.on('message-tray-context-menu', function (event, args) {
+    const menu = new Menu()
+
+    menu.append(
+      new MenuItem({
+        label: 'Limpar',
+        click: () => {
+          const contextMenuAction: ContextMenuAction = {
+            action: 'clear-tray',
+            context: 'message-tray',
+          }
+
+          event.sender.send('context-menu-action', contextMenuAction)
+        },
+      })
+    )
+
+    menu.popup({
+      window: mainWindow,
+      x: args.x,
+      y: args.y,
+    })
+  })
 }
 
 app.on('ready', () => {
