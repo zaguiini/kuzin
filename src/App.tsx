@@ -6,8 +6,7 @@ import React, {
   useState,
 } from 'react'
 import { ipcRenderer } from 'electron'
-import fs from 'fs'
-import { promisify } from 'util'
+import { readFile, writeFile } from 'fs'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
@@ -17,9 +16,6 @@ import { TeamModal } from './components/TeamModal'
 import { useMessageTray } from './components/MessageTray/useMessageTray'
 import { IpcRendererEvent } from 'electron'
 import { useEditor } from './components/Editor/useEditor'
-
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
 
 const isFileManagementAction = (x: UserAction): x is FileManagementAction => {
   return x.context === 'file-management'
@@ -65,6 +61,7 @@ const appReducer = (state = initialState, action: Action): AppReducerState => {
       return {
         ...state,
         currentOpenFileContent: state.editorContent,
+        hasChanges: false
       }
 
     case 'setEditorContent':
@@ -104,24 +101,24 @@ export const App = () => {
   }
 
   const handleOpenFileRequest = (filePath: string) => {
-    readFile(filePath)
-      .then((file) => {
-        dispatch({
-          type: 'setOpenFile',
-          payload: {
-            path: filePath,
-            content: file.toString(),
-          },
-        })
-
-        clearMessageTray()
-      })
-      .catch(() => {
-        reportMessageToTray({
+    readFile(filePath, (err, file) => {
+      if(err) {
+        return reportMessageToTray({
           level: 'error',
-          text: 'Falha em ler arquivo',
+          text: 'Falha em ler arquivo: ' + err.message,
         })
+      }
+
+      dispatch({
+        type: 'setOpenFile',
+        payload: {
+          path: filePath,
+          content: file.toString(),
+        },
       })
+
+      clearMessageTray()
+    })
   }
 
   useEffect(() => {
@@ -150,22 +147,22 @@ export const App = () => {
         action.action === 'save-file' &&
         action.filePath
       ) {
-        writeFile(action.filePath, editorContent)
-          .then(() => {
-            dispatch({
-              type: 'setOpenFile',
-              payload: {
-                path: action.filePath,
-                content: editorContent,
-              },
-            })
-          })
-          .catch(() => {
-            reportMessageToTray({
+        writeFile(action.filePath, editorContent, (err) => {
+          if(err) {
+            return reportMessageToTray({
               level: 'error',
-              text: 'Falha em salvar arquivo',
+              text: 'Falha em salvar arquivo: ' + err.message,
             })
+          }
+
+          dispatch({
+            type: 'setOpenFile',
+            payload: {
+              path: action.filePath,
+              content: editorContent,
+            },
           })
+        })
       }
     }
 
@@ -211,18 +208,18 @@ export const App = () => {
           return ipcRenderer.send('save-file-request')
         }
 
-        writeFile(currentOpenFilePath, editorContent)
-          .then(() => {
-            dispatch({
-              type: 'saveFile',
-            })
-          })
-          .catch(() => {
-            reportMessageToTray({
+        writeFile(currentOpenFilePath, editorContent, (err) => {
+          if(err) {
+            return reportMessageToTray({
               level: 'error',
-              text: 'Falha em salvar arquivo',
+              text: 'Falha em salvar arquivo: ' + err.message,
             })
+          }
+
+          dispatch({
+            type: 'saveFile',
           })
+        })
       },
       copy: copyFromEditor,
       paste: pasteToEditor,
