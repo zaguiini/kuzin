@@ -1,4 +1,10 @@
-import React, { useState, MouseEvent, useEffect, useMemo } from 'react'
+import React, {
+  MouseEvent,
+  useEffect,
+  useReducer,
+  Reducer,
+  useState,
+} from 'react'
 import { ipcRenderer } from 'electron'
 import fs from 'fs'
 import { promisify } from 'util'
@@ -22,17 +28,60 @@ const isFileManagementAction = (x: UserAction): x is FileManagementAction => {
 const UNSAVED_CHANGES_WARNING =
   'Você tem certeza? Perderá todas as alterações não salvas.'
 
-export const App = () => {
-  const [currentOpenFilePath, setCurrentOpenFilePath] = useState<
-    string | undefined
-  >()
-  const [currentOpenFileContent, setCurrentOpenFileContent] = useState('')
-  const [editorContent, setEditorContent] = useState('')
-  const [isTeamModalOpen, setTeamModalOpen] = useState(false)
+type AppReducerState = {
+  currentOpenFilePath?: string
+  currentOpenFileContent: string
+  editorContent: string
+  hasChanges: boolean
+}
 
-  const hasChanges = useMemo(() => {
-    return currentOpenFileContent !== editorContent
-  }, [currentOpenFileContent, editorContent])
+const initialState: AppReducerState = {
+  currentOpenFilePath: undefined,
+  currentOpenFileContent: '',
+  editorContent: '',
+  hasChanges: false,
+}
+
+type Action =
+  | {
+      type: 'setOpenFile'
+      payload: { path?: string; content: string }
+    }
+  | { type: 'setEditorContent'; payload: string }
+  | { type: 'saveFile' }
+
+const appReducer = (state = initialState, action: Action): AppReducerState => {
+  switch (action.type) {
+    case 'setOpenFile':
+      return {
+        ...state,
+        currentOpenFilePath: action.payload.path,
+        currentOpenFileContent: action.payload.content,
+        editorContent: action.payload.content,
+        hasChanges: false,
+      }
+
+    case 'saveFile':
+      return {
+        ...state,
+        currentOpenFileContent: state.editorContent,
+      }
+
+    case 'setEditorContent':
+      return {
+        ...state,
+        editorContent: action.payload,
+        hasChanges: state.currentOpenFileContent !== action.payload,
+      }
+  }
+}
+
+export const App = () => {
+  const [
+    { currentOpenFilePath, editorContent, hasChanges },
+    dispatch,
+  ] = useReducer<Reducer<AppReducerState, Action>>(appReducer, initialState)
+  const [isTeamModalOpen, setTeamModalOpen] = useState(false)
 
   const {
     editorRef,
@@ -43,18 +92,28 @@ export const App = () => {
   const { messages, reportMessageToTray, clearMessageTray } = useMessageTray()
 
   const handleNewFileRequest = () => {
-    setCurrentOpenFilePath(undefined)
-    setCurrentOpenFileContent('')
-    setEditorContent('')
+    dispatch({
+      type: 'setOpenFile',
+      payload: {
+        path: undefined,
+        content: '',
+      },
+    })
+
     clearMessageTray()
   }
 
   const handleOpenFileRequest = (filePath: string) => {
     readFile(filePath)
       .then((file) => {
-        setCurrentOpenFilePath(filePath)
-        setCurrentOpenFileContent(file.toString())
-        setEditorContent(file.toString())
+        dispatch({
+          type: 'setOpenFile',
+          payload: {
+            path: filePath,
+            content: file.toString(),
+          },
+        })
+
         clearMessageTray()
       })
       .catch(() => {
@@ -73,7 +132,8 @@ export const App = () => {
       if (action.context === 'message-tray' && action.action === 'clear-tray') {
         clearMessageTray()
       }
-      if (isFileManagementAction(action) && action.action === "new-file"){
+
+      if (isFileManagementAction(action) && action.action === 'new-file') {
         handleNewFileRequest()
       }
 
@@ -92,8 +152,13 @@ export const App = () => {
       ) {
         writeFile(action.filePath, editorContent)
           .then(() => {
-            setCurrentOpenFilePath(action.filePath)
-            setCurrentOpenFileContent(editorContent)
+            dispatch({
+              type: 'setOpenFile',
+              payload: {
+                path: action.filePath,
+                content: editorContent,
+              },
+            })
           })
           .catch(() => {
             reportMessageToTray({
@@ -148,7 +213,9 @@ export const App = () => {
 
         writeFile(currentOpenFilePath, editorContent)
           .then(() => {
-            setCurrentOpenFileContent(editorContent)
+            dispatch({
+              type: 'saveFile',
+            })
           })
           .catch(() => {
             reportMessageToTray({
@@ -192,7 +259,9 @@ export const App = () => {
           <Editor
             ref={editorRef}
             value={editorContent}
-            onChange={setEditorContent}
+            onChange={(payload) =>
+              dispatch({ type: 'setEditorContent', payload })
+            }
           />
         </Box>
         <Box
