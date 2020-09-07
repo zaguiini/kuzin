@@ -1,5 +1,6 @@
 import MonacoEditor from 'react-monaco-editor'
-import { useRef } from 'react'
+import { KeyCode } from 'monaco-editor'
+import { useRef, useEffect } from 'react'
 
 const hasSelection = (editor: Exclude<MonacoEditor['editor'], undefined>) => {
   const selection = editor.getSelection()
@@ -14,6 +15,12 @@ const hasSelection = (editor: Exclude<MonacoEditor['editor'], undefined>) => {
 
 export const useEditor = () => {
   const editor = useRef<MonacoEditor>(null)
+
+  useEffect(() => {
+    if (editor.current?.editor) {
+      editor.current.editor.addCommand(KeyCode.F1, () => { })
+    }
+  })
 
   const copyFromEditor = () => {
     if (editor.current?.editor && hasSelection(editor.current.editor)) {

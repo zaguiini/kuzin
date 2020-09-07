@@ -21,6 +21,10 @@ const isFileManagementAction = (x: UserAction): x is FileManagementAction => {
   return x.context === 'file-management'
 }
 
+const isShortcutAction = (x: UserAction): x is ShortcutAction => {
+  return x.context === 'shortcut-triggered'
+}
+
 const UNSAVED_CHANGES_WARNING =
   'Você tem certeza? Perderá todas as alterações não salvas.'
 
@@ -40,9 +44,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-      type: 'setOpenFile'
-      payload: { path?: string; content: string }
-    }
+    type: 'setOpenFile'
+    payload: { path?: string; content: string }
+  }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -102,7 +106,7 @@ export const App = () => {
 
   const handleOpenFileRequest = (filePath: string) => {
     readFile(filePath, (err, file) => {
-      if(err) {
+      if (err) {
         return reportMessageToTray({
           level: 'error',
           text: 'Falha em ler arquivo: ' + err.message,
@@ -121,6 +125,62 @@ export const App = () => {
     })
   }
 
+  const handleNewClick = () => {
+    if (hasChanges) {
+      ipcRenderer.send('show-warning', {
+        message: UNSAVED_CHANGES_WARNING,
+        action: {
+          action: 'new-file',
+          context: 'file-management',
+        },
+      })
+    } else {
+      handleNewFileRequest()
+    }
+  }
+
+  const handleBuildTrigger = () => {
+    reportMessageToTray({
+      level: 'warning',
+      text: 'Compilação de programas ainda não foi implementada',
+    })
+  }
+
+  const handleOpenClick = () => {
+    if (hasChanges) {
+      ipcRenderer.send('show-warning', {
+        message: UNSAVED_CHANGES_WARNING,
+        action: {
+          action: 'open-file',
+          context: 'file-management',
+        },
+      })
+    } else {
+      ipcRenderer.send('open-file-request')
+    }
+  }
+
+  const handleSaveClick = () => {
+    if (!hasChanges) return
+
+    if (!currentOpenFilePath) {
+      return ipcRenderer.send('save-file-request')
+    }
+
+    writeFile(currentOpenFilePath, editorContent, (err) => {
+      if (err) {
+        return reportMessageToTray({
+          level: 'error',
+          text: 'Falha em salvar arquivo: ' + err.message,
+        })
+      }
+
+      dispatch({
+        type: 'saveFile',
+      })
+    })
+  }
+
   useEffect(() => {
     const handleContextMenuAction = (
       _: IpcRendererEvent,
@@ -128,6 +188,28 @@ export const App = () => {
     ) => {
       if (action.context === 'message-tray' && action.action === 'clear-tray') {
         clearMessageTray()
+      }
+
+      if (isShortcutAction(action)) {
+        switch (action.action) {
+          case 'F1':
+            return setTeamModalOpen(true)
+
+          case 'F9':
+            return handleBuildTrigger()
+
+          case 'F11':
+            return clearMessageTray()
+
+          case 'CommandOrControl+N':
+            return handleNewClick()
+
+          case 'CommandOrControl+O':
+            return handleOpenClick()
+
+          case 'CommandOrControl+S':
+            return handleSaveClick()
+        }
       }
 
       if (isFileManagementAction(action) && action.action === 'new-file') {
@@ -148,7 +230,7 @@ export const App = () => {
         action.filePath
       ) {
         writeFile(action.filePath, editorContent, (err) => {
-          if(err) {
+          if (err) {
             return reportMessageToTray({
               level: 'error',
               text: 'Falha em salvar arquivo: ' + err.message,
@@ -175,61 +257,13 @@ export const App = () => {
 
   const handleToolBarClick = (action: ToolBarAction) => {
     return {
-      new: () => {
-        if (hasChanges) {
-          ipcRenderer.send('show-warning', {
-            message: UNSAVED_CHANGES_WARNING,
-            action: {
-              action: 'new-file',
-              context: 'file-management',
-            },
-          })
-        } else {
-          handleNewFileRequest()
-        }
-      },
-      open: () => {
-        if (hasChanges) {
-          ipcRenderer.send('show-warning', {
-            message: UNSAVED_CHANGES_WARNING,
-            action: {
-              action: 'open-file',
-              context: 'file-management',
-            },
-          })
-        } else {
-          ipcRenderer.send('open-file-request')
-        }
-      },
-      save: () => {
-        if (!hasChanges) return
-
-        if (!currentOpenFilePath) {
-          return ipcRenderer.send('save-file-request')
-        }
-
-        writeFile(currentOpenFilePath, editorContent, (err) => {
-          if(err) {
-            return reportMessageToTray({
-              level: 'error',
-              text: 'Falha em salvar arquivo: ' + err.message,
-            })
-          }
-
-          dispatch({
-            type: 'saveFile',
-          })
-        })
-      },
+      new: handleNewClick,
+      open: handleOpenClick,
+      save: handleSaveClick,
       copy: copyFromEditor,
       paste: pasteToEditor,
       cut: cutFromEditor,
-      build: () => {
-        reportMessageToTray({
-          level: 'warning',
-          text: 'Compilação de programas ainda não foi implementada',
-        })
-      },
+      build: handleBuildTrigger,
       team: () => setTeamModalOpen(true),
     }[action]()
   }

@@ -9,7 +9,12 @@ type FileManagementAction = {
   context: 'file-management'
 }
 
-type UserAction = ContextMenuAction | FileManagementAction
+type ShortcutAction = {
+  action: 'F1' | 'CommandOrControl+N' | 'CommandOrControl+O' | 'CommandOrControl+S' | 'F9' | 'F11'
+  context: 'shortcut-triggered'
+}
+
+type UserAction = ContextMenuAction | FileManagementAction | ShortcutAction
 
 type ShowWarningInput = {
   message: string

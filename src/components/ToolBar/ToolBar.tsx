@@ -20,14 +20,14 @@ interface ToolBarProps {
 export const ToolBar = ({ onClick }: ToolBarProps) => {
   return (
     <Box display="flex">
-      <ToolBarButton icon={FaFileMedical} onClick={() => onClick('new')}>Novo</ToolBarButton>
-      <ToolBarButton icon={FaFolderOpen} onClick={() => onClick('open')}>Abrir</ToolBarButton>
-      <ToolBarButton icon={FaSave} onClick={() => onClick('save')}>Salvar</ToolBarButton>
-      <ToolBarButton icon={FaRegCopy} onClick={() => onClick('copy')}>Copiar</ToolBarButton>
-      <ToolBarButton icon={FaPaste} onClick={() => onClick('paste')}>Colar</ToolBarButton>
-      <ToolBarButton icon={FaCut} onClick={() => onClick('cut')}>Recortar</ToolBarButton>
-      <ToolBarButton icon={FaWrench} onClick={() => onClick('build')}>Compilar</ToolBarButton>
-      <ToolBarButton icon={FaUserFriends} onClick={() => onClick('team')}>Equipe</ToolBarButton>
+      <ToolBarButton shortcut='Ctrl + N' icon={FaFileMedical} onClick={() => onClick('new')}>Novo</ToolBarButton>
+      <ToolBarButton shortcut='Ctrl + O' icon={FaFolderOpen} onClick={() => onClick('open')}>Abrir</ToolBarButton>
+      <ToolBarButton shortcut='Ctrl + S' icon={FaSave} onClick={() => onClick('save')}>Salvar</ToolBarButton>
+      <ToolBarButton shortcut='Ctrl + C' icon={FaRegCopy} onClick={() => onClick('copy')}>Copiar</ToolBarButton>
+      <ToolBarButton shortcut='Ctrl + V' icon={FaPaste} onClick={() => onClick('paste')}>Colar</ToolBarButton>
+      <ToolBarButton shortcut='Ctrl + X' icon={FaCut} onClick={() => onClick('cut')}>Recortar</ToolBarButton>
+      <ToolBarButton shortcut='F9' icon={FaWrench} onClick={() => onClick('build')}>Compilar</ToolBarButton>
+      <ToolBarButton shortcut='F1' icon={FaUserFriends} onClick={() => onClick('team')}>Equipe</ToolBarButton>
     </Box>
   )
 }

@@ -1,12 +1,15 @@
 import React, { ComponentType } from 'react'
 import { Button, ButtonProps, Box } from '@chakra-ui/core'
+import { Text } from 'src/components/Text'
 
 interface ToolBarButtonProps extends ButtonProps {
   icon: ComponentType
+  shortcut: string
 }
 
 export const ToolBarButton = ({
   icon,
+  shortcut,
   children,
   outline = 'none',
   size = 'md',
@@ -35,6 +38,10 @@ export const ToolBarButton = ({
         outline
       }}
       {...props}
-    > <Box as={icon} marginBottom={1} />{children}</Button>
+    >
+      <Box as={icon} marginBottom={1} />
+      {children}
+      <Text as={Box} marginTop={1} fontSize='xs' color='gray.500'>{shortcut}</Text>
+    </Button>
   )
 }

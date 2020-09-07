@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, MenuItem, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, dialog, globalShortcut } from 'electron'
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 
 if (require('electron-squirrel-startup')) {
@@ -15,10 +15,25 @@ const createWindow = () => {
     },
   })
 
-  if (process.env.NODE_ENV !== "development"){
+  const shortcuts: ShortcutAction['action'][] = ['F1', 'CommandOrControl+N', 'CommandOrControl+O', 'CommandOrControl+S', 'F9', 'F11']
+
+  shortcuts.forEach(shortcut => {
+    globalShortcut.register(shortcut, () => {
+      const shortcutAction: ShortcutAction = {
+        action: shortcut,
+        context: 'shortcut-triggered',
+      }
+
+      mainWindow.webContents.send('user-action', shortcutAction)
+    })
+  })
+
+
+
+  if (process.env.NODE_ENV !== 'development') {
     mainWindow.setMenu(null)
   }
-  
+
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
 
   ipcMain.on(
@@ -77,6 +92,7 @@ const createWindow = () => {
     menu.append(
       new MenuItem({
         label: 'Limpar',
+        accelerator: 'F11',
         click: () => {
           const contextMenuAction: ContextMenuAction = {
             action: 'clear-tray',
