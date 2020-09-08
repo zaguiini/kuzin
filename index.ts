@@ -1,4 +1,12 @@
-import { app, BrowserWindow, ipcMain, Menu, MenuItem, dialog, globalShortcut } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  MenuItem,
+  dialog,
+  globalShortcut,
+} from 'electron'
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 
 if (require('electron-squirrel-startup')) {
@@ -15,9 +23,16 @@ const createWindow = () => {
     },
   })
 
-  const shortcuts: ShortcutAction['action'][] = ['F1', 'CommandOrControl+N', 'CommandOrControl+O', 'CommandOrControl+S', 'F9', 'F11']
+  const shortcuts: ShortcutAction['action'][] = [
+    'F1',
+    'CommandOrControl+N',
+    'CommandOrControl+O',
+    'CommandOrControl+S',
+    'F9',
+    'F11',
+  ]
 
-  shortcuts.forEach(shortcut => {
+  shortcuts.forEach((shortcut) => {
     globalShortcut.register(shortcut, () => {
       const shortcutAction: ShortcutAction = {
         action: shortcut,
@@ -27,8 +42,6 @@ const createWindow = () => {
       mainWindow.webContents.send('user-action', shortcutAction)
     })
   })
-
-
 
   if (process.env.NODE_ENV !== 'development') {
     mainWindow.setMenu(null)

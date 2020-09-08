@@ -44,9 +44,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-    type: 'setOpenFile'
-    payload: { path?: string; content: string }
-  }
+      type: 'setOpenFile'
+      payload: { path?: string; content: string }
+    }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -65,7 +65,7 @@ const appReducer = (state = initialState, action: Action): AppReducerState => {
       return {
         ...state,
         currentOpenFileContent: state.editorContent,
-        hasChanges: false
+        hasChanges: false,
       }
 
     case 'setEditorContent':

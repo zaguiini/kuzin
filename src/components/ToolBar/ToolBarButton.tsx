@@ -35,13 +35,15 @@ export const ToolBarButton = ({
       }}
       _focus={{
         bg: 'gray.800',
-        outline
+        outline,
       }}
       {...props}
     >
       <Box as={icon} marginBottom={1} />
       {children}
-      <Text as={Box} marginTop={1} fontSize='xs' color='gray.500'>{shortcut}</Text>
+      <Text as={Box} marginTop={1} fontSize="xs" color="gray.500">
+        {shortcut}
+      </Text>
     </Button>
   )
 }

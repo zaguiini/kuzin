@@ -13,12 +13,14 @@ const hasSelection = (editor: Exclude<MonacoEditor['editor'], undefined>) => {
   }
 }
 
+const noop = () => {}
+
 export const useEditor = () => {
   const editor = useRef<MonacoEditor>(null)
 
   useEffect(() => {
     if (editor.current?.editor) {
-      editor.current.editor.addCommand(KeyCode.F1, () => { })
+      editor.current.editor.addCommand(KeyCode.F1, noop)
     }
   })
 

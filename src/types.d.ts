@@ -10,7 +10,13 @@ type FileManagementAction = {
 }
 
 type ShortcutAction = {
-  action: 'F1' | 'CommandOrControl+N' | 'CommandOrControl+O' | 'CommandOrControl+S' | 'F9' | 'F11'
+  action:
+    | 'F1'
+    | 'CommandOrControl+N'
+    | 'CommandOrControl+O'
+    | 'CommandOrControl+S'
+    | 'F9'
+    | 'F11'
   context: 'shortcut-triggered'
 }
 
