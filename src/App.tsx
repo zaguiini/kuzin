@@ -44,9 +44,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-      type: 'setOpenFile'
-      payload: { path?: string; content: string }
-    }
+    type: 'setOpenFile'
+    payload: { path?: string; content: string }
+  }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -297,8 +297,7 @@ export const App = () => {
         </Box>
         <Box
           height={100}
-          overflowX="auto"
-          overflowY="scroll"
+          overflow="auto"
           bg="gray.900"
           paddingX={2}
           borderTopWidth={5}

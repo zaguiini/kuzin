@@ -39,6 +39,10 @@ const createWindow = () => {
         context: 'shortcut-triggered',
       }
 
+      if (!mainWindow.isFocused()) {
+        return
+      }
+
       mainWindow.webContents.send('user-action', shortcutAction)
     })
   })
