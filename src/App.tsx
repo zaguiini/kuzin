@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react'
 import { ipcRenderer } from 'electron'
+import { sprintf } from 'sprintf-js'
 import { readFile, writeFile } from 'fs'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
@@ -16,6 +17,7 @@ import { TeamModal } from './components/TeamModal'
 import { useMessageTray } from './components/MessageTray/useMessageTray'
 import { IpcRendererEvent } from 'electron'
 import { useEditor } from './components/Editor/useEditor'
+import { Compiler } from './compiler/Compiler'
 
 const isFileManagementAction = (x: UserAction): x is FileManagementAction => {
   return x.context === 'file-management'
@@ -139,11 +141,35 @@ export const App = () => {
     }
   }
 
-  const handleBuildTrigger = () => {
-    reportMessageToTray({
-      level: 'warning',
-      text: 'Compilação de programas ainda não foi implementada',
-    })
+  const handleBuildTrigger = async () => {
+    if (editorContent.length === 0) {
+      return reportMessageToTray({
+        level: "warning",
+        text: 'Nenhum programa para compilar',
+      })
+    }
+
+    try {
+      const tokens = await new Compiler(editorContent).compile()
+
+      const codeReport = tokens.reduce((message, token) => {
+        const tokenDescription = sprintf("%-7s %-20s %-10s\n", token.getLine(), token.getClasse(), token.getLexeme())
+
+        return message + tokenDescription
+      }, sprintf("%-7s %-20s %-10s\n", "linha", "classe", "lexema"))
+
+      reportMessageToTray({
+        level: 'code',
+        text: codeReport + "\nprograma compilado com sucesso"
+      })
+    } catch (error) {
+      console.log(JSON.stringify(error))
+
+      reportMessageToTray({
+        level: 'error',
+        text: error.message
+      })
+    }
   }
 
   const handleOpenClick = () => {
