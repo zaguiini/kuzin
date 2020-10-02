@@ -1,5 +1,5 @@
 dei
-if (resolve)
+if ("resolve")
 penis
 vagina
 int

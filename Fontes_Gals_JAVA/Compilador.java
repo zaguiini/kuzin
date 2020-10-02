@@ -7,7 +7,8 @@ public class Compilador {
     public static String lerArquivo() {
         StringBuilder data = new StringBuilder();
         try {
-            File myObj = new File("programa.txt");
+            File myObj = new File(
+                    "F:/Google Drive/FURB/FURB/4 - Semestre/Compiladores/kuzin/Fontes_Gals_JAVA/programa.txt");
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
                 data.append(myReader.nextLine());
