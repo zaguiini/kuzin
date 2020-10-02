@@ -5,8 +5,7 @@ export class Compiler {
     input: string
 
     constructor(input: string) {
-        // TODO: ERRO TA AQUI
-        this.input = input.replace(/\n/, '\n')
+        this.input = input.replace(/\r\n/g, "\n")
     }
 
     compile() {
@@ -20,7 +19,7 @@ export class Compiler {
 
                 while (token != null) {
                     const parcial = this.input.substring(0, token.getPosition())
-                    const linhaAtual = (parcial.length - parcial.replace('\n', "").length) + 1
+                    const linhaAtual = (parcial.length - parcial.replace(/\n/g, "").length) + 1
                     token.setLine(linhaAtual)
                     tokens.push(token)
 

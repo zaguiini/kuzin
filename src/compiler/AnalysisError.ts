@@ -4,7 +4,7 @@ export class AnalysisError extends Error {
     constructor(msg: string, position: number = -1) {
         super(msg);
         this.position = position;
-        this.message = msg + ", @ " + this.position;
+        this.message = `Erro na linha ${this.position} - ${msg}`;
     }
 
     getPosition() {

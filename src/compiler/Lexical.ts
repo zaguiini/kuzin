@@ -112,10 +112,17 @@ export class Lexical implements Constants {
 
         if (endState < 0 || (endState != state && this.tokenForState(lastState) == -2)) {
             let parcial = this.input.substring(0, start);
-            let linhaAtual = (parcial.length - parcial.replace('\n', "").length + 1);
-            console.log(parcial, linhaAtual);
+            let linhaAtual = (parcial.length - parcial.replace(/\n/g, "").length + 1);
 
-            throw new LexicalError(ScannerConstants.SCANNER_ERROR[lastState], linhaAtual);
+            const error = ScannerConstants.SCANNER_ERROR[lastState]
+
+            if (error === ScannerConstants.UnexpectedSymbolError) {
+                const symbol = this.input.substr(parcial.length, 1)
+
+                throw new LexicalError(symbol + " " + error, linhaAtual);
+            } else {
+                throw new LexicalError(error, linhaAtual);
+            }
         }
 
         this.position = end;

@@ -153,7 +153,9 @@ export class ScannerConstants {
 
     static SPECIAL_CASES_VALUES = [6, 10, 11, 16, 17, 21, 12, 9, 13, 19, 20, 8, 7, 23, 14, 22, 18, 15];
 
-    static SCANNER_ERROR = ["simbolo invalido", "", "Erro identificando \"!=\"",
+    static UnexpectedSymbolError = "simbolo invalido"
+
+    static SCANNER_ERROR = [ScannerConstants.UnexpectedSymbolError, "", "Erro identificando \"!=\"",
         " constante str invalida ou nao finalizada", "", "", " constante str invalida ou nao finalizada", "", "",
         "", "", "", "", "", "", "", "", "", "", "comentario de bloco invalido ou nao finalizado", "", "", "", "",
         "", "", "constante c_float invalida ou nao finalizada", "", "", "",

@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react'
 import { ipcRenderer } from 'electron'
+import { sprintf } from 'sprintf-js'
 import { readFile, writeFile } from 'fs'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
@@ -151,11 +152,15 @@ export const App = () => {
     try {
       const tokens = await new Compiler(editorContent).compile()
 
-      console.log(tokens)
+      const codeReport = tokens.reduce((message, token) => {
+        const tokenDescription = sprintf("%-7s %-20s %-10s\n", token.getLine(), token.getClasse(), token.getLexeme())
+
+        return message + tokenDescription
+      }, sprintf("%-7s %-20s %-10s\n", "linha", "classe", "lexema"))
 
       reportMessageToTray({
-        level: "success",
-        text: 'Compilado com sucesso',
+        level: 'code',
+        text: codeReport + "\nprograma compilado com sucesso"
       })
     } catch (error) {
       console.log(JSON.stringify(error))
