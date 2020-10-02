@@ -14,6 +14,7 @@ export const Editor = forwardRef<
       options={{ copyWithSyntaxHighlighting: false }}
       value={value}
       onChange={onChange}
+      language="plaintext"
       key={resizeKey}
       theme="vs-dark"
     />

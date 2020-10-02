@@ -163,8 +163,6 @@ export const App = () => {
         text: codeReport + "\nprograma compilado com sucesso"
       })
     } catch (error) {
-      console.log(JSON.stringify(error))
-
       reportMessageToTray({
         level: 'error',
         text: error.message

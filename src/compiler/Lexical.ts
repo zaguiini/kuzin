@@ -94,11 +94,7 @@ export class Lexical implements Constants {
             lastState = state;
             const nextChar = this.nextChar()
 
-            console.log(nextChar, String.fromCharCode(nextChar))
-
-            state = this.nextState(nextChar, state); //q
-
-            console.log('state', state)
+            state = this.nextState(nextChar, state)
 
             if (state < 0) {
                 break
