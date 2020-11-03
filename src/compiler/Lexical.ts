@@ -3,7 +3,7 @@ import { LexicalError } from './LexicalError';
 import { Constants } from './Constants';
 import { Token } from './Token';
 
-export class Lexical implements Constants {
+export class Lexical {
     private input: string;
     private position: number;
 
@@ -112,7 +112,7 @@ export class Lexical implements Constants {
 
             const error = ScannerConstants.SCANNER_ERROR[lastState]
 
-            if (error === ScannerConstants.UnexpectedSymbolError) {
+            if (error === ScannerConstants.SCANNER_ERROR[0]) {
                 const symbol = this.input.substr(parcial.length, 1)
 
                 throw new LexicalError(symbol + " " + error, linhaAtual);
