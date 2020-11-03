@@ -1,96 +1,106 @@
+import { Lexical } from "./Lexical";
+import { Semantico } from "./Semantic";
+import { Token } from "./Token";
+import { Stack } from './Stack';
+import { ParserConstants } from './ParserConstants';
+import { Constants } from './Constants'
+import { SyntaticError } from './SyntaticError';
+
 export class Sintatico {
-    private Stack stack = new Stack();
-    private Token currentToken;
-    private Token previousToken;
-    private Lexico scanner;
-    private Semantico semanticAnalyser;
+    private stack: Stack;
+    private currentToken: (Token | null);
+    private previousToken: (Token | null);
+    private scanner: Lexical;
+    private semanticAnalyser: Semantico;
 
-    private static final boolean isTerminal(int x)
-{
-    return x < FIRST_NON_TERMINAL;
-}
-
-    private static final boolean isNonTerminal(int x)
-{
-    return x >= FIRST_NON_TERMINAL && x < FIRST_SEMANTIC_ACTION;
-}
-
-    private static final boolean isSemanticAction(int x)
-{
-    return x >= FIRST_SEMANTIC_ACTION;
-}
-
-    private boolean step() throws LexicalError, SyntaticError, SemanticError
-{
-    if (currentToken == null) {
-        int pos = 0;
-        if (previousToken != null)
-            pos = previousToken.getPosition() + previousToken.getLexeme().length();
-
-        currentToken = new Token(DOLLAR, "$", pos);
+    constructor(stack: Stack, currentToken: (Token | null), previousToken: (Token | null), scanner: Lexical, semanticAnalyser: Semantico) {
+        this.stack = stack;
+        this.currentToken = currentToken;
+        this.previousToken = previousToken;
+        this.scanner = scanner;
+        this.semanticAnalyser = semanticAnalyser;
     }
 
-    int x = ((Integer)stack.pop()).intValue();
-    int a = currentToken.getId();
-
-    if (x == EPSILON) {
-        return false;
+    isTerminal(x: number): boolean {
+        return x < ParserConstants.FIRST_NON_TERMINAL;
     }
-    else if (isTerminal(x)) {
-        if (x == a) {
-            if (stack.empty())
-                return true;
+
+    isNonTerminal(x: number): boolean {
+        return x >= ParserConstants.FIRST_NON_TERMINAL && x < ParserConstants.FIRST_SEMANTIC_ACTION;
+    }
+
+    isSemanticAction(x: number): boolean {
+        return x >= ParserConstants.FIRST_SEMANTIC_ACTION;
+    }
+
+    step(): boolean {
+        if (this.currentToken == null) {
+            let pos = 0;
+            if (this.previousToken != null)
+                pos = this.previousToken.getPosition() + this.previousToken.getLexeme().length;
+
+            this.currentToken = new Token(Constants.DOLLAR, "$", pos);
+        }
+
+        let x = this.stack.pop();
+        let a = this.currentToken.getId();
+
+        if (x == Constants.EPSILON) {
+            return false;
+        }
+        else if (this.isTerminal(x)) {
+            if (x == a) {
+                if (this.stack.empty())
+                    return true;
+                else {
+                    this.previousToken = this.currentToken;
+                    this.currentToken = this.scanner.nextToken();
+                    return false;
+                }
+            }
             else {
-                previousToken = currentToken;
-                currentToken = scanner.nextToken();
-                return false;
+                throw new SyntaticError(ParserConstants.PARSER_ERROR[x], this.currentToken.getPosition());
             }
         }
-        else {
-            throw new SyntaticError(PARSER_ERROR[x], currentToken.getPosition());
+        else if (this.isNonTerminal(x)) {
+            if (this.pushProduction(x, a))
+                return false;
+            else
+                throw new SyntaticError(ParserConstants.PARSER_ERROR[x], this.currentToken.getPosition());
         }
-    }
-    else if (isNonTerminal(x)) {
-        if (pushProduction(x, a))
-            return false;
-        else
-            throw new SyntaticError(PARSER_ERROR[x], currentToken.getPosition());
-    }
-    else // isSemanticAction(x)
-    {
-        semanticAnalyser.executeAction(x - FIRST_SEMANTIC_ACTION, previousToken);
-        return false;
-    }
-}
-
-    private boolean pushProduction(int topStack, int tokenInput)
-{
-    int p = PARSER_TABLE[topStack - FIRST_NON_TERMINAL][tokenInput - 1];
-    if (p >= 0) {
-        int[] production = PRODUCTIONS[p];
-        //empilha a produ��o em ordem reversa
-        for (int i = production.length - 1; i >= 0; i--)
+        else // isSemanticAction(x)
         {
-            stack.push(new Integer(production[i]));
+            this.semanticAnalyser.executeAction(x - ParserConstants.FIRST_SEMANTIC_ACTION, this.previousToken);
+            return false;
         }
-        return true;
     }
-    else
-        return false;
-}
 
-    public void parse(Lexico scanner, Semantico semanticAnalyser) throws LexicalError, SyntaticError, SemanticError
-{
-    this.scanner = scanner;
-    this.semanticAnalyser = semanticAnalyser;
+    pushProduction(topStack: number, tokenInput: number): boolean {
+        let p: number = ParserConstants.PARSER_TABLE[topStack - ParserConstants.FIRST_NON_TERMINAL][tokenInput - 1];
+        if (p >= 0) {
+            let production: number[] = ParserConstants.PRODUCTIONS[p];
+            //empilha a produção em ordem reversa
+            for (let i: number = production.length - 1; i >= 0; i--) {
+                this.stack.push(production[i]);
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
-    stack.clear();
-    stack.push(new Integer(DOLLAR));
-    stack.push(new Integer(START_SYMBOL));
+    parse(scanner: Lexical, semanticAnalyser: Semantico) {
+        this.scanner = scanner;
+        this.semanticAnalyser = semanticAnalyser;
 
-    currentToken = scanner.nextToken();
+        this.stack.clear();
+        this.stack.push(Constants.DOLLAR);
+        this.stack.push(ParserConstants.START_SYMBOL);
 
-    while (!step())
-        ;
-}
+        this.currentToken = scanner.nextToken();
+
+        while (!this.step()) {
+        };
+    }
 }
