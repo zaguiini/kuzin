@@ -34,7 +34,13 @@ export const MessageTray = ({ messages }: MessageTrayProps) => {
   return (
     <List spacing={2}>
       {messages.map(({ id, level, text }) => (
-        <ListItem key={id} color={defaultTextColor} fontSize="sm" display="flex" alignItems="flex-start">
+        <ListItem
+          key={id}
+          color={defaultTextColor}
+          fontSize="sm"
+          display="flex"
+          alignItems="flex-start"
+        >
           <ListIcon icon={getIcon(level)} color={getIconColor(level)} />
           <div>{level === 'code' ? <pre>{text}</pre> : text}</div>
         </ListItem>

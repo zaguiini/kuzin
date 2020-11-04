@@ -7,7 +7,13 @@ export const useMessageTray = () => {
   return {
     messages,
     reportMessageToTray: (...newMessages: Omit<Message, 'id'>[]) =>
-      setMessages([...messages, ...newMessages.map(message => ({ ...message, id: new Date().toISOString() }))]),
+      setMessages([
+        ...messages,
+        ...newMessages.map((message) => ({
+          ...message,
+          id: new Date().toISOString(),
+        })),
+      ]),
     clearMessageTray: () => setMessages([]),
   }
 }

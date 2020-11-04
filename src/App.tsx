@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react'
 import { ipcRenderer } from 'electron'
-import { sprintf } from 'sprintf-js'
 import { readFile, writeFile } from 'fs'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
@@ -46,9 +45,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-    type: 'setOpenFile'
-    payload: { path?: string; content: string }
-  }
+      type: 'setOpenFile'
+      payload: { path?: string; content: string }
+    }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -144,7 +143,7 @@ export const App = () => {
   const handleBuildTrigger = async () => {
     if (editorContent.length === 0) {
       return reportMessageToTray({
-        level: "warning",
+        level: 'warning',
         text: 'Nenhum programa para compilar',
       })
     }
@@ -154,12 +153,12 @@ export const App = () => {
 
       reportMessageToTray({
         level: 'success',
-        text: "Programa compilado com sucesso"
+        text: 'Programa compilado com sucesso',
       })
     } catch (error) {
       reportMessageToTray({
         level: 'error',
-        text: error.message
+        text: error.message,
       })
     }
   }
