@@ -1258,7 +1258,7 @@ export const ScannerConstants = {
 
     SCANNER_ERROR:
         [
-            "Caractere n�o esperado",
+            "Caractere não esperado",
             "",
             "Erro identificando \"!:\"",
             "Erro identificando c_str",

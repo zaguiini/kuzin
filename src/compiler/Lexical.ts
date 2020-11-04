@@ -79,6 +79,11 @@ export class Lexical {
         return base;
     }
 
+    getLine(): number {
+        let parcial = this.input.substring(0, this.position)
+        return (parcial.length - parcial.replace(/\n/g, "").length) + 1
+    }
+
     nextToken(): Token | null {
         if (!this.hasInput()) {
             return null;

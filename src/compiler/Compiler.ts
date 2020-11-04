@@ -1,4 +1,7 @@
 import { Lexical } from './Lexical'
+import { Semantico } from './Semantic'
+import { Stack } from './Stack'
+import { Sintatico } from './Syntatic'
 import { Token } from './Token'
 
 export class Compiler {
@@ -9,26 +12,19 @@ export class Compiler {
     }
 
     compile() {
-        return new Promise<Token[]>((resolve, reject) => {
-            const tokens = []
+        return new Promise<void>((resolve, reject) => {
+            const pilha = new Stack()
 
             const lexico = new Lexical(this.input)
-
+            const semantico = new Semantico()
+            const sintatico = new Sintatico(pilha, null, null, lexico, semantico)
             try {
-                let token = lexico.nextToken()
-
-                while (token != null) {
-                    const parcial = this.input.substring(0, token.getPosition())
-                    const linhaAtual = (parcial.length - parcial.replace(/\n/g, "").length) + 1
-                    token.setLine(linhaAtual)
-                    tokens.push(token)
-
-                    token = lexico.nextToken()
-                }
+                sintatico.parse()
+                resolve()
             } catch (e) {
-                return reject(e);
+                reject(e)
             }
-            resolve(tokens)
+
         })
     }
 }

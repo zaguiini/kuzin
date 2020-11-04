@@ -59,14 +59,14 @@ export class Sintatico {
                 }
             }
             else {
-                throw new SyntaticError(ParserConstants.PARSER_ERROR[x], this.currentToken.getPosition());
+                throw new SyntaticError(ParserConstants.PARSER_ERROR[x], this.scanner.getLine());
             }
         }
         else if (this.isNonTerminal(x)) {
             if (this.pushProduction(x, a))
                 return false;
             else
-                throw new SyntaticError(ParserConstants.PARSER_ERROR[x], this.currentToken.getPosition());
+                throw new SyntaticError(ParserConstants.PARSER_ERROR[x], this.scanner.getLine());
         }
         else // isSemanticAction(x)
         {
@@ -90,15 +90,12 @@ export class Sintatico {
         }
     }
 
-    parse(scanner: Lexical, semanticAnalyser: Semantico) {
-        this.scanner = scanner;
-        this.semanticAnalyser = semanticAnalyser;
-
+    parse() {
         this.stack.clear();
         this.stack.push(Constants.DOLLAR);
         this.stack.push(ParserConstants.START_SYMBOL);
 
-        this.currentToken = scanner.nextToken();
+        this.currentToken = this.scanner.nextToken();
 
         while (!this.step()) {
         };

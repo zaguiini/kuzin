@@ -150,17 +150,11 @@ export const App = () => {
     }
 
     try {
-      const tokens = await new Compiler(editorContent).compile()
-
-      const codeReport = tokens.reduce((message, token) => {
-        const tokenDescription = sprintf("%-7s %-20s %-10s\n", token.getLine(), token.getClasse(), token.getLexeme())
-
-        return message + tokenDescription
-      }, sprintf("%-7s %-20s %-10s\n", "linha", "classe", "lexema"))
+      await new Compiler(editorContent).compile()
 
       reportMessageToTray({
-        level: 'code',
-        text: codeReport + "\nprograma compilado com sucesso"
+        level: 'success',
+        text: "Programa compilado com sucesso"
       })
     } catch (error) {
       reportMessageToTray({
