@@ -68,16 +68,18 @@ export class Sintatico {
         }
       } else {
         throw new SyntaticError(
-          ParserConstants.PARSER_ERROR[x],
-          this.scanner.getLine()
+          this.scanner.getLine(),
+          `encontrado ${this.currentToken}`,
+          ParserConstants.PARSER_ERROR[x]
         )
       }
     } else if (this.isNonTerminal(x)) {
       if (this.pushProduction(x, a)) return false
       else
         throw new SyntaticError(
-          ParserConstants.PARSER_ERROR[x],
-          this.scanner.getLine()
+          this.scanner.getLine(),
+          `encontrado ${this.currentToken}`,
+          ParserConstants.PARSER_ERROR[x]
         )
     } // isSemanticAction(x)
     else {
@@ -92,7 +94,7 @@ export class Sintatico {
   pushProduction(topStack: number, tokenInput: number): boolean {
     const p: number =
       ParserConstants.PARSER_TABLE[
-        topStack - ParserConstants.FIRST_NON_TERMINAL
+      topStack - ParserConstants.FIRST_NON_TERMINAL
       ][tokenInput - 1]
     if (p >= 0) {
       const production: number[] = ParserConstants.PRODUCTIONS[p]

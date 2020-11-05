@@ -21,6 +21,7 @@ export class Compiler {
         sintatico.parse()
         resolve()
       } catch (e) {
+        console.log(e)
         reject(e)
       }
     })
