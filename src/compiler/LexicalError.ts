@@ -6,11 +6,15 @@ export class LexicalError extends AnalysisError {
 
   constructor(description: string, position: number) {
     super()
+
+    console.log('Erro léxico')
     this.description = description
     this.position = position
+
+    this.message = this.getErrorMessage()
   }
 
-  getErrorMessage() {
+  getErrorMessage = () => {
     return `Erro na linha ${this.position} - ${this.description}`
   }
 }

@@ -4,7 +4,7 @@ import { Token } from './Token'
 import { Stack } from './Stack'
 import { ParserConstants } from './ParserConstants'
 import { Constants } from './Constants'
-import { SyntaticError } from './SyntaticError'
+import { SyntacticError } from './SyntacticError'
 
 export class Sintatico {
   private stack: Stack<number>
@@ -50,7 +50,7 @@ export class Sintatico {
           this.previousToken.getPosition() +
           this.previousToken.getLexeme().length
 
-      this.currentToken = new Token(Constants.DOLLAR, '$', pos)
+      this.currentToken = new Token(Constants.DOLLAR, 'EOF', pos)
     }
 
     const x = this.stack.pop()
@@ -67,18 +67,18 @@ export class Sintatico {
           return false
         }
       } else {
-        throw new SyntaticError(
+        throw new SyntacticError(
           this.scanner.getLine(),
-          `encontrado ${this.currentToken}`,
+          `encontrado ${this.currentToken.getLexeme()}`,
           ParserConstants.PARSER_ERROR[x]
         )
       }
     } else if (this.isNonTerminal(x)) {
       if (this.pushProduction(x, a)) return false
       else
-        throw new SyntaticError(
+        throw new SyntacticError(
           this.scanner.getLine(),
-          `encontrado ${this.currentToken}`,
+          `encontrado ${this.currentToken.getLexeme()}`,
           ParserConstants.PARSER_ERROR[x]
         )
     } // isSemanticAction(x)
@@ -94,7 +94,7 @@ export class Sintatico {
   pushProduction(topStack: number, tokenInput: number): boolean {
     const p: number =
       ParserConstants.PARSER_TABLE[
-      topStack - ParserConstants.FIRST_NON_TERMINAL
+        topStack - ParserConstants.FIRST_NON_TERMINAL
       ][tokenInput - 1]
     if (p >= 0) {
       const production: number[] = ParserConstants.PRODUCTIONS[p]

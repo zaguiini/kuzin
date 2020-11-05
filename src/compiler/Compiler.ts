@@ -1,7 +1,7 @@
 import { Lexical } from './Lexical'
 import { Semantico } from './Semantic'
 import { Stack } from './Stack'
-import { Sintatico } from './Syntatic'
+import { Sintatico } from './Syntactic'
 
 export class Compiler {
   input: string
@@ -21,7 +21,6 @@ export class Compiler {
         sintatico.parse()
         resolve()
       } catch (e) {
-        console.log(e)
         reject(e)
       }
     })
