@@ -1,13 +1,12 @@
 export class AnalysisError extends Error {
-  private position: number
 
-  constructor(msg: string, position = -1) {
-    super(msg)
-    this.position = position
-    this.message = `Erro na linha ${this.position} - ${msg}`
-  }
+    constructor() {
+        super();
+        this.message = this.getErrorMessage();
+    }
 
-  getPosition() {
-    return this.position
-  }
+    getErrorMessage(): string {
+        throw new Error("Não implementado")
+    }
+
 }
