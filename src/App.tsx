@@ -141,6 +141,8 @@ export const App = () => {
   }
 
   const handleBuildTrigger = async () => {
+    clearMessageTray()
+
     if (editorContent.length === 0) {
       return reportMessageToTray({
         level: 'warning',
