@@ -45,9 +45,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-      type: 'setOpenFile'
-      payload: { path?: string; content: string }
-    }
+    type: 'setOpenFile'
+    payload: { path?: string; content: string }
+  }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -143,12 +143,13 @@ export const App = () => {
   const handleBuildTrigger = async () => {
     clearMessageTray()
 
-    if (editorContent.length === 0) {
+    if (editorContent.replace(/\s|\t|\r?\n/g, "").length === 0) {
       return reportMessageToTray({
         level: 'warning',
         text: 'Nenhum programa para compilar',
       })
     }
+
 
     try {
       await new Compiler(editorContent).compile()
