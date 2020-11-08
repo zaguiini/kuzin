@@ -7,11 +7,9 @@ export class SyntacticError extends AnalysisError {
 
   constructor(position: number, received: string, expected: string) {
     super()
-    console.log('Erro sintático')
     this.position = position
     this.received = received
     this.expected = expected
-
     this.message = this.getErrorMessage()
   }
 
