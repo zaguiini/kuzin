@@ -42,7 +42,7 @@ export class Sintatico {
     return x >= ParserConstants.FIRST_SEMANTIC_ACTION
   }
 
-  step(): boolean {
+  step(): boolean | string {
     if (this.currentToken == null) {
       let pos = 0
       if (this.previousToken != null)
@@ -83,18 +83,17 @@ export class Sintatico {
         )
     } // isSemanticAction(x)
     else {
-      this.semanticAnalyser.executeAction(
+      return this.semanticAnalyser.executeAction(
         x - ParserConstants.FIRST_SEMANTIC_ACTION,
         this.previousToken
       )
-      return false
     }
   }
 
   pushProduction(topStack: number, tokenInput: number): boolean {
     const p: number =
       ParserConstants.PARSER_TABLE[
-        topStack - ParserConstants.FIRST_NON_TERMINAL
+      topStack - ParserConstants.FIRST_NON_TERMINAL
       ][tokenInput - 1]
     if (p >= 0) {
       const production: number[] = ParserConstants.PRODUCTIONS[p]
@@ -112,9 +111,21 @@ export class Sintatico {
     this.stack.clear()
     this.stack.push(Constants.DOLLAR)
     this.stack.push(ParserConstants.START_SYMBOL)
-
     this.currentToken = this.scanner.nextToken()
 
-    while (!this.step());
+    let result = this.doStep();
+    console.log(result)
+  }
+
+
+  doStep(): string {
+    let atual = this.step()
+    if (atual === true) {
+      return "";
+    }
+    if (atual === false) {
+      return this.doStep();
+    }
+    return atual + this.doStep();
   }
 }
