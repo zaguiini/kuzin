@@ -11,15 +11,14 @@ export class Compiler {
   }
 
   compile() {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       const pilha = new Stack<number>()
 
       const lexico = new Lexical(this.input)
       const semantico = new Semantico()
       const sintatico = new Sintatico(pilha, null, null, lexico, semantico)
       try {
-        sintatico.parse()
-        resolve()
+        resolve(sintatico.parse())
       } catch (e) {
         reject(e)
       }

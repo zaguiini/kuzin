@@ -7,6 +7,7 @@ import React, {
 } from 'react'
 import { ipcRenderer } from 'electron'
 import { readFile, writeFile } from 'fs'
+import { parse, dirname, resolve } from 'path'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
@@ -141,6 +142,10 @@ export const App = () => {
   }
 
   const handleBuildTrigger = async () => {
+    if (hasChanges || !currentOpenFilePath) {
+      return handleSaveClick(handleBuildTrigger);
+    }
+
     clearMessageTray()
 
     if (editorContent.replace(/\s|\t|\r?\n/g, "").length === 0) {
@@ -150,14 +155,20 @@ export const App = () => {
       })
     }
 
-
     try {
-      await new Compiler(editorContent).compile()
-
-      reportMessageToTray({
-        level: 'success',
-        text: 'Programa compilado com sucesso',
+      const codigoObjeto = await new Compiler(editorContent).compile()
+      const pasta = dirname(currentOpenFilePath)
+      const nomeArquivo = parse(currentOpenFilePath).name + '.il'
+      writeFile(resolve(pasta, nomeArquivo), codigoObjeto, (err) => {
+        if (err) {
+          throw err
+        }
+        reportMessageToTray({
+          level: 'success',
+          text: 'Programa compilado com sucesso',
+        })
       })
+
     } catch (error) {
       reportMessageToTray({
         level: 'error',
@@ -180,7 +191,7 @@ export const App = () => {
     }
   }
 
-  const handleSaveClick = () => {
+  const handleSaveClick = (callback?: () => void) => {
     if (!hasChanges) return
 
     if (!currentOpenFilePath) {
@@ -198,6 +209,7 @@ export const App = () => {
       dispatch({
         type: 'saveFile',
       })
+      callback?.()
     })
   }
 

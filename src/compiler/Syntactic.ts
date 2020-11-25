@@ -113,8 +113,7 @@ export class Sintatico {
     this.stack.push(ParserConstants.START_SYMBOL)
     this.currentToken = this.scanner.nextToken()
 
-    let result = this.doStep();
-    console.log(result)
+    return this.doStep();
   }
 
 
