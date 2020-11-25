@@ -92,12 +92,6 @@ export class Token {
           return 'simbolo especial'
         case Constants.t_TOKEN_39:
           return 'simbolo especial'
-        case Constants.t_TOKEN_40:
-          return 'simbolo especial'
-        case Constants.t_TOKEN_41:
-          return 'simbolo especial'
-        case Constants.t_TOKEN_42:
-          return 'simbolo especial'
       }
     }
     return ''
