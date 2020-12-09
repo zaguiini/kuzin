@@ -156,10 +156,10 @@ export const App = () => {
     }
 
     try {
-      const codigoObjeto = await new Compiler(editorContent).compile()
+      const nomeArquivo = parse(currentOpenFilePath).name
+      const codigoObjeto = await new Compiler(editorContent, nomeArquivo).compile()
       const pasta = dirname(currentOpenFilePath)
-      const nomeArquivo = parse(currentOpenFilePath).name + '.il'
-      writeFile(resolve(pasta, nomeArquivo), codigoObjeto, (err) => {
+      writeFile(resolve(pasta, nomeArquivo + '.il'), codigoObjeto, (err) => {
         if (err) {
           throw err
         }

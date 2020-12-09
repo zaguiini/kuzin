@@ -18,7 +18,7 @@ export class Sintatico {
     currentToken: Token | null,
     previousToken: Token | null,
     scanner: Lexical,
-    semanticAnalyser: Semantico
+    semanticAnalyser: Semantico,
   ) {
     this.stack = stack
     this.currentToken = currentToken
@@ -42,7 +42,7 @@ export class Sintatico {
     return x >= ParserConstants.FIRST_SEMANTIC_ACTION
   }
 
-  step(): boolean | string {
+  step() {
     if (this.currentToken == null) {
       let pos = 0
       if (this.previousToken != null)
@@ -83,10 +83,11 @@ export class Sintatico {
         )
     } // isSemanticAction(x)
     else {
-      return this.semanticAnalyser.executeAction(
+      this.semanticAnalyser.executeAction(
         x - ParserConstants.FIRST_SEMANTIC_ACTION,
         this.previousToken
       )
+      return false
     }
   }
 
@@ -107,24 +108,28 @@ export class Sintatico {
     }
   }
 
-  parse() {
+  parse(nome: string) {
     this.stack.clear()
     this.stack.push(Constants.DOLLAR)
     this.stack.push(ParserConstants.START_SYMBOL)
     this.currentToken = this.scanner.nextToken()
+    this.semanticAnalyser.setup()
 
-    return this.doStep();
-  }
+    const comeco = `.assembly extern mscorlib {}
+.assembly _${nome}{}
+.module _${nome}.exe
 
+.class public _UNICA{
 
-  doStep(): string {
-    let atual = this.step()
-    if (atual === true) {
-      return "";
-    }
-    if (atual === false) {
-      return this.doStep();
-    }
-    return atual + this.doStep();
+.method static public void _principal() {
+  .entrypoint
+`
+    const fim = `
+  ret
+}
+}
+`
+    while (!this.step());
+    return comeco + this.semanticAnalyser.getCodigo().map((instrucao) => `  ${instrucao}`).join(`\r\n`) + fim;
   }
 }

@@ -1,13 +1,8 @@
 import { AnalysisError } from './AnalysisError'
 
 export class SemanticError extends AnalysisError {
-  constructor() {
+  constructor(msg: string) {
     super()
-
-    this.message = this.getErrorMessage()
-  }
-
-  getErrorMessage = () => {
-    return `Semantico não implementado`
+    this.message = msg
   }
 }

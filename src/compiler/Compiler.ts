@@ -5,9 +5,12 @@ import { Sintatico } from './Syntactic'
 
 export class Compiler {
   input: string
+  nome: string
 
-  constructor(input: string) {
+
+  constructor(input: string, nome: string) {
     this.input = input.replace(/\r\n/g, '\n')
+    this.nome = nome
   }
 
   compile() {
@@ -18,7 +21,7 @@ export class Compiler {
       const semantico = new Semantico()
       const sintatico = new Sintatico(pilha, null, null, lexico, semantico)
       try {
-        resolve(sintatico.parse())
+        resolve(sintatico.parse(this.nome))
       } catch (e) {
         reject(e)
       }
