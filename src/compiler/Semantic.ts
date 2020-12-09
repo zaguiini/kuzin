@@ -86,7 +86,7 @@ export class Semantico {
         break
       case 24: this.acao24();
         break
-      case 25: this.acao25();
+      case 25: this.acao25(token!);
         break
       case 26: this.acao26();
         break
@@ -178,13 +178,13 @@ export class Semantico {
     }
   }
 
-  acao05(token: Token | null) {
+  acao05(token: Token) {
     this.pilhaTipos.push('int64')
     this.codigo.push(`ldc.i8 ${token?.getLexeme()}`)
     this.codigo.push('conv.r8')
   }
 
-  acao06(token: Token | null) {
+  acao06(token: Token) {
     this.pilhaTipos.push('float64')
     this.codigo.push(`ldc.i8 ${token?.getLexeme()}`)
     this.codigo.push('conv.r8')
@@ -228,12 +228,12 @@ export class Semantico {
 
   acao10() {
     let operador = ({
-      '>': 'maq',
-      '<': 'meq',
-      '>=': 'maiq',
-      '<=': 'meiq',
-      '==': 'ii',
-      '!=': 'di'
+      '>': 'cgt',
+      '<': 'clt',
+      '>=': 'ALTERAR',
+      '<=': 'ALTERAR',
+      '==': 'ceq',
+      '!=': 'ALTERAR'
     } as Record<string, string>)[this.operador]
     this.codigo.push(operador)
   }
@@ -369,7 +369,23 @@ export class Semantico {
     this.codigo.push(`stloc ${this.id}`)
   }
 
-  acao25() {
+  acao25(token: Token) {
+    const tipo = token.getLexeme()
+    let tipoVar: string
+
+    switch (tipo) {
+      case 'int': tipoVar = 'int64';
+        break
+      case 'float': tipoVar = 'float64';
+        break
+      case 'str': tipoVar = 'string';
+        break
+      default: tipoVar = 'string';
+    }
+    if (!(this.id in this.tabelaSimbolos)) {
+      this.tabelaSimbolos[this.id] = tipoVar
+    }
+    this.codigo.push(`.locals (${this.tabelaSimbolos[this.id]} ${this.id})`)
   }
 
   acao26() {
@@ -399,7 +415,7 @@ export class Semantico {
   acao34() {
   }
 
-  acao35(token: Token | null) {
+  acao35(token: Token) {
     const id = token!.getLexeme()
     if (!(this.id in this.tabelaSimbolos)) {
       throw new SemanticError('identificador não declarado')
