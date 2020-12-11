@@ -1,1 +1,0 @@
-faltou conv.i8 antes do segundo call void [mscorlib]System.Console::Write(int64)
