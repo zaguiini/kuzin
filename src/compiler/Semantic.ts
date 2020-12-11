@@ -190,9 +190,11 @@ export class Semantico {
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
+        this.codigo.push('conv.r8')
       } else {
         this.pilhaTipos.push('int64')
       }
+
       this.codigo.push('sub')
     }
   }
@@ -212,6 +214,7 @@ export class Semantico {
       } else {
         this.pilhaTipos.push('int64')
       }
+
       this.codigo.push('mul')
     }
   }
@@ -226,8 +229,6 @@ export class Semantico {
     ) {
       throw new SemanticError('Tipos incompatíveis em expressão aritmética')
     } else {
-      this.codigo.push('div')
-
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
         this.codigo.push('conv.r8')
@@ -235,18 +236,20 @@ export class Semantico {
         this.pilhaTipos.push('int64')
         this.codigo.push('conv.i8')
       }
+
+      this.codigo.push('div')
     }
   }
 
   acao05(token: Token) {
     this.pilhaTipos.push('int64')
-    this.codigo.push(`ldc.i8 ${token?.getLexeme()}`)
+    this.codigo.push(`ldc.i8 ${token.getLexeme()}`)
     this.codigo.push('conv.r8')
   }
 
   acao06(token: Token) {
     this.pilhaTipos.push('float64')
-    this.codigo.push(`ldc.r8 ${token?.getLexeme()}`)
+    this.codigo.push(`ldc.r8 ${token.getLexeme()}`)
   }
 
   acao07() {
@@ -327,7 +330,9 @@ export class Semantico {
   }
 
   acao14() {
+    console.log(this.pilhaTipos, this.tabelaSimbolos)
     const tipo = this.pilhaTipos.pop()!
+
     this.codigo.push(`call void [mscorlib]System.Console::Write(${tipo})`)
     this.pilhaTipos.push(tipo)
   }
@@ -404,7 +409,7 @@ export class Semantico {
   }
 
   acao22(token: Token) {
-    this.id = token ? token.getLexeme() : ''
+    this.id = token.getLexeme()
   }
 
   acao23(token: Token) {
@@ -460,11 +465,21 @@ export class Semantico {
   }
 
   acao26() {
+    const tipoEntrada = this.tabelaSimbolos[this.id]
+
+    const parserNamespace =
+      {
+        bool: 'Boolean',
+        int64: 'Int64',
+        float64: 'Double',
+      }[tipoEntrada as 'int64' | 'float64' | 'bool'] || 'String'
+
+    this.codigo.push('call string [mscorlib]System.Console::ReadLine()')
+
     this.codigo.push(
-      `call ${
-        this.tabelaSimbolos[this.id]
-      } [mscorlib]System.Console::ReadLine()`
+      `call ${tipoEntrada} [mscorlib]System.${parserNamespace}::Parse(string)`
     )
+
     this.codigo.push(`stloc ${this.id}`)
   }
 
@@ -518,13 +533,18 @@ export class Semantico {
   }
 
   acao35(token: Token) {
-    const id = token!.getLexeme()
+    const id = token.getLexeme()
+
     if (!(id in this.tabelaSimbolos)) {
       throw new SemanticError('identificador não declarado')
     }
+
     this.codigo.push(`ldloc ${id}`)
+
     const tipoIdTabela = this.tabelaSimbolos[id]
+
     this.pilhaTipos.push(tipoIdTabela)
+
     if (tipoIdTabela === 'int64') {
       this.codigo.push('conv.r8')
     }
