@@ -1,8 +1,9 @@
 .assembly extern mscorlib {}
-.assembly _codigo_objeto{}
-.module _codigo_objeto.exe
+.assembly _expressoes_aritmeticas{}
+.module _expressoes_aritmeticas.exe
 
 .class public _UNICA{
+
 .method static public void _principal() {
   .entrypoint
   ldstr "expressoes aritmeticas: "
