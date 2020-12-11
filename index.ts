@@ -13,6 +13,20 @@ if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
+class WindowInstance {
+  private instance!: BrowserWindow
+
+  set(instance: BrowserWindow) {
+    this.instance = instance
+  }
+
+  get() {
+    return this.instance
+  }
+}
+
+const windowInstance = new WindowInstance()
+
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     minHeight: 600,
@@ -23,29 +37,7 @@ const createWindow = () => {
     },
   })
 
-  const shortcuts: ShortcutAction['action'][] = [
-    'F1',
-    'CommandOrControl+N',
-    'CommandOrControl+O',
-    'CommandOrControl+S',
-    'F9',
-    'F11',
-  ]
-
-  shortcuts.forEach((shortcut) => {
-    globalShortcut.register(shortcut, () => {
-      const shortcutAction: ShortcutAction = {
-        action: shortcut,
-        context: 'shortcut-triggered',
-      }
-
-      if (!mainWindow.isFocused()) {
-        return
-      }
-
-      mainWindow.webContents.send('user-action', shortcutAction)
-    })
-  })
+  windowInstance.set(mainWindow)
 
   if (process.env.NODE_ENV !== 'development') {
     mainWindow.setMenu(null)
@@ -143,4 +135,34 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
+})
+
+app.on('browser-window-blur', () => {
+  globalShortcut.unregisterAll()
+})
+
+app.on('browser-window-focus', () => {
+  const shortcuts: ShortcutAction['action'][] = [
+    'F1',
+    'CommandOrControl+N',
+    'CommandOrControl+O',
+    'CommandOrControl+S',
+    'F9',
+    'F11',
+  ]
+
+  shortcuts.forEach((shortcut) => {
+    globalShortcut.register(shortcut, () => {
+      const shortcutAction: ShortcutAction = {
+        action: shortcut,
+        context: 'shortcut-triggered',
+      }
+
+      if (!windowInstance.get().isFocused()) {
+        return
+      }
+
+      windowInstance.get().webContents.send('user-action', shortcutAction)
+    })
+  })
 })
