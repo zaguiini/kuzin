@@ -113,7 +113,7 @@ export class Sintatico {
     this.stack.push(Constants.DOLLAR)
     this.stack.push(ParserConstants.START_SYMBOL)
     this.currentToken = this.scanner.nextToken()
-    this.semanticAnalyser.setup()
+    this.semanticAnalyser.setup(this.scanner.getLine)
 
     const comeco = `.assembly extern mscorlib {}
 .assembly _${nome}{}

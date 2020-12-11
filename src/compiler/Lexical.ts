@@ -71,7 +71,7 @@ export class Lexical {
     return base
   }
 
-  getLine(): number {
+  getLine = () => {
     const parcial = this.input.substring(0, this.position)
     return parcial.length - parcial.replace(/\n/g, '').length + 1
   }

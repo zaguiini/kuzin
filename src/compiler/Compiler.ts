@@ -7,7 +7,6 @@ export class Compiler {
   input: string
   nome: string
 
-
   constructor(input: string, nome: string) {
     this.input = input.replace(/\r\n/g, '\n')
     this.nome = nome

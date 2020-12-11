@@ -10,10 +10,12 @@ export class Semantico {
   private pilhaRotulos: string[]
   private tabelaSimbolos: Record<string, string>
   private rotuloAtual: number
+  private getLine: () => number
 
   constructor() {
     this.id = ''
     this.operador = ''
+    this.getLine = () => 0
     this.operadorAtribuicao = ''
     this.codigo = []
     this.pilhaTipos = []
@@ -22,7 +24,8 @@ export class Semantico {
     this.rotuloAtual = 1
   }
 
-  setup() {
+  setup(getLine: () => number) {
+    this.getLine = getLine
     this.id = ''
     this.operador = ''
     this.operadorAtribuicao = ''
@@ -164,7 +167,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       this.codigo.push('add')
 
@@ -185,7 +191,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
@@ -206,7 +215,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
@@ -226,7 +238,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
@@ -259,7 +274,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
@@ -278,7 +296,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
@@ -298,7 +319,10 @@ export class Semantico {
     const tipo2 = this.pilhaTipos.pop()
 
     if (tipo1 !== tipo2) {
-      throw new SemanticError('tipos incompatíveis em expressão relacional')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão relacional',
+        this.getLine()
+      )
     }
 
     this.pilhaTipos.push('bool')
@@ -314,7 +338,10 @@ export class Semantico {
         return this.codigo.push('ceq')
 
       default:
-        throw new SemanticError('Não implementado')
+        throw new SemanticError(
+          `operador ${this.operador} não implementado`,
+          this.getLine()
+        )
     }
   }
 
@@ -334,7 +361,10 @@ export class Semantico {
     const tipo = this.pilhaTipos.pop()
 
     if (tipo != 'bool') {
-      throw new SemanticError('tipos incompatíveis em expressão lógica')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão lógica',
+        this.getLine()
+      )
     } else {
       this.pilhaTipos.push('bool')
       this.codigo.push('not')
@@ -365,7 +395,10 @@ export class Semantico {
     const tipo2 = this.pilhaTipos.pop()
 
     if (tipo1 != 'bool' || tipo2 != 'bool') {
-      throw new SemanticError('tipos incompatíveis em expressão lógica')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão lógica',
+        this.getLine()
+      )
     } else {
       this.pilhaTipos.push('bool')
       this.codigo.push('and')
@@ -377,7 +410,10 @@ export class Semantico {
     const tipo2 = this.pilhaTipos.pop()
 
     if (tipo1 != 'bool' || tipo2 != 'bool') {
-      throw new SemanticError('tipos incompatíveis em expressão lógica')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão lógica',
+        this.getLine()
+      )
     } else {
       this.pilhaTipos.push('bool')
       this.codigo.push('or')
@@ -389,7 +425,10 @@ export class Semantico {
     const tipo2 = this.pilhaTipos.pop()
 
     if (tipo1 !== 'int64' || tipo2 !== 'int64') {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       this.pilhaTipos.push('int64')
     }
@@ -404,7 +443,10 @@ export class Semantico {
       (tipo1 !== 'float64' && tipo1 !== 'int64') ||
       (tipo2 !== 'float64' && tipo2 !== 'int64')
     ) {
-      throw new SemanticError('Tipos incompatíveis em expressão aritmética')
+      throw new SemanticError(
+        'tipos incompatíveis em expressão aritmética',
+        this.getLine()
+      )
     } else {
       if (tipo1 === 'float64' || tipo2 === 'float64') {
         this.pilhaTipos.push('float64')
@@ -433,7 +475,7 @@ export class Semantico {
     this.operadorAtribuicao = token.getLexeme()
 
     if (!(this.id in this.tabelaSimbolos)) {
-      throw new SemanticError('identificador não declarado')
+      throw new SemanticError('identificador não declarado', this.getLine())
     }
     if (this.tabelaSimbolos[this.id] === 'int64') {
       this.codigo.push('conv.r8')
@@ -553,7 +595,7 @@ export class Semantico {
     const id = token.getLexeme()
 
     if (!(id in this.tabelaSimbolos)) {
-      throw new SemanticError('identificador não declarado')
+      throw new SemanticError('identificador não declarado', this.getLine())
     }
 
     this.codigo.push(`ldloc ${id}`)
