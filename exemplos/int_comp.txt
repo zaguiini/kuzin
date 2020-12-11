@@ -1,0 +1,12 @@
+v1 = int(input("digite um valor int: "))
+v2 = int(input("digite um valor int: "))
+
+if v1 > v2 :
+  msg = "v1 maior que v2"
+elif v1 < v2 :
+  msg = "v1 menor que v2"
+else :
+  msg = "v1 igual a v2"
+end
+
+print(msg)
