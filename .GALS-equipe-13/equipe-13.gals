@@ -1,0 +1,145 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = Stream
+Parser = LL
+#RegularDefinitions
+min: [a-z]
+dig: [0-9]
+D1: \"[^\"\n]*\"
+D2: '[^'\n\\]*'
+c_comentario_bloco: \[\n[^\[\]]*\n\]
+c_comentario_linha: # [^\n]*
+#Tokens
+// Classes
+id: {min}+_?(({min}|{dig})+_?)*({min}|{dig})|{min}
+c_int: {dig}+
+c_float: {dig}+\.{dig}+
+c_str: {D1}|{D2}
+
+// Palavras reservadas
+int     = id: "int" 
+float   = id: "float" 
+str     = id: "str" 
+
+and       = id: "and"
+or        = id: "or"
+not       = id: "not"
+if        = id: "if"
+elif      = id: "elif"
+else      = id: "else"
+while     = id: "while"
+end       = id: "end"
+false     = id: "false"
+true      = id: "true"
+input     = id: "input"
+print     = id: "print"
+
+// Símbolos especiais
+"("
+")"
+"=="
+"!="
+"<"
+"<="
+">"
+">="
+"+"
+"-"
+"*"
+"/"
+"//"
+"%"
+","
+":"
+"="
+"+="
+"-="
+
+// Comentários
+:!({c_comentario_bloco}|{c_comentario_linha})
+
+// Caracteres de formação
+:[\s\t\n]
+
+
+#NonTerminals
+<programa>
+<lista_de_comandos>
+<tipo>
+<simples>
+<operacao>
+<atribuicao>
+<entrada_de_dados>
+<saida_de_dados>
+<lista_de_expressoes>
+<selecao>
+<selecao_simples>
+<selecao_senao>
+<selecao_composta>
+<selecao_alternativa>
+<repeticao>
+<expressao>
+<expressao_>
+<elemento>
+<relacional>
+<operador_relacional>
+<aritmetica>
+<aritmetica_>
+<termo>
+<termo_>
+<fator>
+<lista_de_comandos_A>
+<operacao_A>
+<entrada_de_dados_A>
+<lista_de_expressoes_A>
+<selecao_A>
+<selecao_composta_A>
+<selecao_alternativa_A>
+<relacional_A>
+<operacao_B>
+
+
+
+#Grammar
+<programa>::=#15 <lista_de_comandos> #16 ;
+<lista_de_comandos>::= <operacao> <lista_de_comandos_A> | <saida_de_dados> <lista_de_comandos_A> | <selecao> <lista_de_comandos_A> | <repeticao> <lista_de_comandos_A>;
+<lista_de_comandos_A>::= î | <lista_de_comandos>;
+<tipo> ::= <simples> ;
+<simples> ::= int | float | str;
+<operacao> ::= id #22 <operacao_B>;
+<operacao_B> ::= "=" <operacao_A> | "+=" #23 <expressao> #36 | "-=" #23 <expressao> #36;
+<operacao_A> ::= <atribuicao> | <entrada_de_dados>;
+<atribuicao> ::= <expressao> #24;
+<entrada_de_dados> ::= #25 input "(" <entrada_de_dados_A> ")" #26 | <tipo> #25 "(" input "(" <entrada_de_dados_A> ")" ")" #26;
+<entrada_de_dados_A> ::= c_str #21 #14 | î ; 
+<saida_de_dados> ::= print "(" <lista_de_expressoes> ")";
+<lista_de_expressoes> ::= <expressao> #14 <lista_de_expressoes_A>;
+<lista_de_expressoes_A> ::= î | "," <lista_de_expressoes>;
+<selecao> ::= if <expressao> #27 ":" <lista_de_comandos> <selecao_A>;
+<selecao_A> ::= <selecao_simples> | <selecao_senao> | <selecao_composta>;
+<selecao_simples> ::= end #28;
+<selecao_senao> ::= #31 else ":" <lista_de_comandos> end #28;
+<selecao_composta> ::= <selecao_alternativa> <selecao_composta_A> ;
+<selecao_composta_A> ::= end #28 |  <selecao_senao>;
+<selecao_alternativa> ::= #29 elif <expressao> #30 ":" <lista_de_comandos> <selecao_alternativa_A>;
+<selecao_alternativa_A> ::= î | <selecao_alternativa>;
+<repeticao> ::= #32 while <expressao> #33 ":" <lista_de_comandos> end #34;
+<expressao> ::= <elemento> <expressao_>;
+<expressao_> ::= and <elemento> #17 <expressao_> | or <elemento> #18 <expressao_> | î;
+<elemento> ::= <relacional> | true #11 | false #12 | not <elemento> #13;
+<relacional> ::= <aritmetica> <relacional_A>;
+<relacional_A> ::= <operador_relacional> #9 <aritmetica> #10 | î;
+<operador_relacional> ::= "==" | "!=" | "<" | "<=" | ">" | ">=";
+<aritmetica> ::= <termo> <aritmetica_>;
+<aritmetica_> ::= "+" <termo> #1 <aritmetica_> | "-" <termo> #2 <aritmetica_> | î;
+<termo> ::= <fator> <termo_>;
+<termo_> ::= "*" <fator> #3 <termo_> | "/" <fator> #4 <termo_> | "//" <fator> #19 <termo_> |  "%" <fator> #20 <termo_> | î;
+<fator>	::= id #35 | c_int #5 | c_float #6 | c_str #21 | "(" <expressao> ")" | "+" <fator> #7 | "-" <fator> #8;
+
