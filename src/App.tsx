@@ -46,9 +46,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-    type: 'setOpenFile'
-    payload: { path?: string; content: string }
-  }
+      type: 'setOpenFile'
+      payload: { path?: string; content: string }
+    }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -93,6 +93,27 @@ export const App = () => {
     cutFromEditor,
   } = useEditor()
   const { messages, reportMessageToTray, clearMessageTray } = useMessageTray()
+
+  const handleSaveClick = () => {
+    if (!hasChanges) return
+
+    if (!currentOpenFilePath) {
+      return ipcRenderer.send('save-file-request')
+    }
+
+    writeFile(currentOpenFilePath, editorContent, (err) => {
+      if (err) {
+        return reportMessageToTray({
+          level: 'error',
+          text: 'Falha em salvar arquivo: ' + err.message,
+        })
+      }
+
+      dispatch({
+        type: 'saveFile',
+      })
+    })
+  }
 
   const handleNewFileRequest = () => {
     dispatch({
@@ -142,13 +163,9 @@ export const App = () => {
   }
 
   const handleBuildTrigger = async () => {
-    if (hasChanges || !currentOpenFilePath) {
-      return handleSaveClick(handleBuildTrigger);
-    }
-
     clearMessageTray()
 
-    if (editorContent.replace(/\s|\t|\r?\n/g, "").length === 0) {
+    if (editorContent.replace(/\s|\t|\r?\n/g, '').length === 0) {
       return reportMessageToTray({
         level: 'warning',
         text: 'Nenhum programa para compilar',
@@ -156,9 +173,12 @@ export const App = () => {
     }
 
     try {
-      const nomeArquivo = parse(currentOpenFilePath).name
-      const codigoObjeto = await new Compiler(editorContent, nomeArquivo).compile()
-      const pasta = dirname(currentOpenFilePath)
+      const nomeArquivo = parse(currentOpenFilePath!).name
+      const codigoObjeto = await new Compiler(
+        editorContent,
+        nomeArquivo
+      ).compile()
+      const pasta = dirname(currentOpenFilePath!)
       writeFile(resolve(pasta, nomeArquivo + '.il'), codigoObjeto, (err) => {
         if (err) {
           throw err
@@ -168,7 +188,6 @@ export const App = () => {
           text: 'Programa compilado com sucesso',
         })
       })
-
     } catch (error) {
       reportMessageToTray({
         level: 'error',
@@ -189,28 +208,6 @@ export const App = () => {
     } else {
       ipcRenderer.send('open-file-request')
     }
-  }
-
-  const handleSaveClick = (callback?: () => void) => {
-    if (!hasChanges) return
-
-    if (!currentOpenFilePath) {
-      return ipcRenderer.send('save-file-request')
-    }
-
-    writeFile(currentOpenFilePath, editorContent, (err) => {
-      if (err) {
-        return reportMessageToTray({
-          level: 'error',
-          text: 'Falha em salvar arquivo: ' + err.message,
-        })
-      }
-
-      dispatch({
-        type: 'saveFile',
-      })
-      callback?.()
-    })
   }
 
   useEffect(() => {
@@ -316,7 +313,10 @@ export const App = () => {
           borderBottomColor="gray.600"
           minHeight={70}
         >
-          <ToolBar onClick={handleToolBarClick} />
+          <ToolBar
+            isBuildButtonDisabled={hasChanges || !currentOpenFilePath}
+            onClick={handleToolBarClick}
+          />
         </Box>
         <Box flex={1} display="flex">
           <Editor

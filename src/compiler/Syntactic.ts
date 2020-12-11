@@ -123,6 +123,7 @@ export class Sintatico {
 
 .method static public void _principal() {
 `
+
     const fim = `
 }
 }
