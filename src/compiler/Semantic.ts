@@ -460,8 +460,8 @@ export class Semantico {
     }
     if (!(this.id in this.tabelaSimbolos)) {
       this.tabelaSimbolos[this.id] = tipoVar
+      this.codigo.push(`.locals (${this.tabelaSimbolos[this.id]} ${this.id})`)
     }
-    this.codigo.push(`.locals (${this.tabelaSimbolos[this.id]} ${this.id})`)
   }
 
   acao26() {
