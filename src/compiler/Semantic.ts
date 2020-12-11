@@ -519,11 +519,11 @@ export class Semantico {
 
   acao35(token: Token) {
     const id = token!.getLexeme()
-    if (!(this.id in this.tabelaSimbolos)) {
+    if (!(id in this.tabelaSimbolos)) {
       throw new SemanticError('identificador não declarado')
     }
     this.codigo.push(`ldloc ${id}`)
-    const tipoIdTabela = this.tabelaSimbolos[this.id]
+    const tipoIdTabela = this.tabelaSimbolos[id]
     this.pilhaTipos.push(tipoIdTabela)
     if (tipoIdTabela === 'int64') {
       this.codigo.push('conv.r8')
