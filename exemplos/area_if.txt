@@ -1,6 +1,0 @@
-lado = int(input('Digite um valor para lado: '))
-area = 0
-if lado > 0 :
-    area = lado * lado
-end
-print(area)

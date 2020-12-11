@@ -76,6 +76,9 @@ export const ToolBar = ({ isBuildButtonDisabled, onClick }: ToolBarProps) => {
         shortcut="F9"
         icon={FaWrench}
         isDisabled={isBuildButtonDisabled}
+        title={
+          isBuildButtonDisabled ? 'Salve o arquivo para compilar' : undefined
+        }
         onClick={() => onClick('build')}
       >
         Compilar

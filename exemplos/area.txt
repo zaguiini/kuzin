@@ -1,3 +1,0 @@
-lado = int(input ('Digite um valor para lado: '))
-area = lado * lado
-print (area)
