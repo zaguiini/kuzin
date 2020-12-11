@@ -7,7 +7,9 @@ export class Semantico {
   private operadorAtribuicao: string
   private codigo: string[]
   private pilhaTipos: string[]
+  private pilhaRotulos: string[]
   private tabelaSimbolos: Record<string, string>
+  private rotuloAtual: number
 
 
   constructor() {
@@ -16,7 +18,9 @@ export class Semantico {
     this.operadorAtribuicao = ''
     this.codigo = []
     this.pilhaTipos = []
+    this.pilhaRotulos = []
     this.tabelaSimbolos = {}
+    this.rotuloAtual = 1
   }
 
   setup() {
@@ -25,7 +29,9 @@ export class Semantico {
     this.operadorAtribuicao = ''
     this.codigo = []
     this.pilhaTipos = []
+    this.pilhaRotulos = []
     this.tabelaSimbolos = {}
+    this.rotuloAtual = 1
   }
 
   getId() {
@@ -389,30 +395,57 @@ export class Semantico {
   }
 
   acao26() {
+    this.codigo.push(`call ${this.tabelaSimbolos[this.id]} [mscorlib]System.Console::ReadLine()`)
+    this.codigo.push(`stloc ${this.id}`)
   }
 
   acao27() {
+    this.codigo.push(`brfalse ${this.criarRotulo()}`)
   }
 
   acao28() {
+    while (this.pilhaRotulos.length > 0) {
+      this.codigo.push(`${this.pilhaRotulos.pop()}:`)
+    }
   }
 
   acao29() {
+    const rotuloNovo = this.criarRotulo()
+    this.pilhaRotulos.pop()
+    this.codigo.push(`br ${rotuloNovo}`)
+    this.codigo.push(`${this.pilhaRotulos.pop()}:`)
+    this.pilhaRotulos.push(rotuloNovo)
   }
 
   acao30() {
+    this.codigo.push(`brfalse ${this.criarRotulo()}`)
   }
 
   acao31() {
+    const rotuloNovo = this.criarRotulo()
+    this.pilhaRotulos.pop()
+    this.codigo.push(`br ${rotuloNovo}`)
+    this.codigo.push(`${this.pilhaRotulos.pop()}:`)
+    this.pilhaRotulos.push(rotuloNovo)
   }
 
   acao32() {
+    const rotulo = `r${this.rotuloAtual++}`
+    this.pilhaRotulos.push(rotulo)
+    this.codigo.push(`${rotulo}:`)
   }
 
   acao33() {
+    const rotulo = `r${this.rotuloAtual++}`
+    this.pilhaRotulos.push(rotulo)
+    this.codigo.push(`brfalse ${rotulo}`)
   }
 
   acao34() {
+    const rotuloNovo = this.pilhaRotulos.pop()
+    const rotuloAntigo = this.pilhaRotulos.pop()
+    this.codigo.push(`br ${rotuloAntigo}`)
+    this.codigo.push(`${rotuloNovo}:`)
   }
 
   acao35(token: Token) {
@@ -442,5 +475,11 @@ export class Semantico {
     }
 
     this.codigo.push(`stloc ${this.id}`)
+  }
+
+  criarRotulo() {
+    const rotulo = `r${this.rotuloAtual++}`
+    this.pilhaRotulos.push(rotulo)
+    return rotulo
   }
 }
