@@ -295,15 +295,19 @@ export class Semantico {
   }
 
   acao10() {
-    const operador = ({
-      '>': 'cgt',
-      '<': 'clt',
-      '>=': 'ALTERAR',
-      '<=': 'ALTERAR',
-      '==': 'ceq',
-      '!=': 'ALTERAR',
-    } as Record<string, string>)[this.operador]
-    this.codigo.push(operador)
+    switch (this.operador) {
+      case '>':
+        return this.codigo.push('cgt')
+
+      case '<':
+        return this.codigo.push('clt')
+
+      case '==':
+        return this.codigo.push('ceq')
+
+      default:
+        throw new SemanticError('Não implementado')
+    }
   }
 
   acao11() {
