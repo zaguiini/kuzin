@@ -294,6 +294,15 @@ export class Semantico {
   }
 
   acao10() {
+    const tipo1 = this.pilhaTipos.pop()
+    const tipo2 = this.pilhaTipos.pop()
+
+    if (tipo1 !== tipo2) {
+      throw new SemanticError('tipos incompatíveis em expressão relacional')
+    }
+
+    this.pilhaTipos.push('bool')
+
     switch (this.operador) {
       case '>':
         return this.codigo.push('cgt')
