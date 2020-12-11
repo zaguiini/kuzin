@@ -1,0 +1,13 @@
+faltou conv.i8 antes do segundo call void [mscorlib]System.Console::Write(int64)
+faltou conv.i8 depois do div
+
+Dando erro:
+  lado = int(input ('Digite um valor para lado: '))
+  area = lado * lado
+  print (area)
+
+ -possivelmente acao25() e acao23()
+
+Verificar os tipos em assembly
+Confirmar operadores
+Arrumar UI
