@@ -1,0 +1,5 @@
+v1 = 0
+while v1 < 1 :
+  v1 = int(input("digite um valor int: "))
+end
+print ("valor lido maior que 0")
