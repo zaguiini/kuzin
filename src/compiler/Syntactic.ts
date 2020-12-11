@@ -18,7 +18,7 @@ export class Sintatico {
     currentToken: Token | null,
     previousToken: Token | null,
     scanner: Lexical,
-    semanticAnalyser: Semantico,
+    semanticAnalyser: Semantico
   ) {
     this.stack = stack
     this.currentToken = currentToken
@@ -94,7 +94,7 @@ export class Sintatico {
   pushProduction(topStack: number, tokenInput: number): boolean {
     const p: number =
       ParserConstants.PARSER_TABLE[
-      topStack - ParserConstants.FIRST_NON_TERMINAL
+        topStack - ParserConstants.FIRST_NON_TERMINAL
       ][tokenInput - 1]
     if (p >= 0) {
       const production: number[] = ParserConstants.PRODUCTIONS[p]
@@ -122,14 +122,19 @@ export class Sintatico {
 .class public _UNICA{
 
 .method static public void _principal() {
-  .entrypoint
 `
     const fim = `
-  ret
 }
 }
 `
     while (!this.step());
-    return comeco + this.semanticAnalyser.getCodigo().map((instrucao) => `  ${instrucao}`).join(`\r\n`) + fim;
+    return (
+      comeco +
+      this.semanticAnalyser
+        .getCodigo()
+        .map((instrucao) => `  ${instrucao}`)
+        .join(`\r\n`) +
+      fim
+    )
   }
 }

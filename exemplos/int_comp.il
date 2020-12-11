@@ -1,6 +1,6 @@
 .assembly extern mscorlib {}
-.assembly _codigo_objeto{}
-.module _codigo_objeto.exe
+.assembly _int_comp{}
+.module _int_comp.exe
 
 .class public _UNICA{
 

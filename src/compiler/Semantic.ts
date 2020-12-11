@@ -173,7 +173,6 @@ export class Semantico {
         this.codigo.push('conv.r8')
       } else {
         this.pilhaTipos.push('int64')
-        this.codigo.push('conv.i8')
       }
     }
   }
@@ -334,16 +333,23 @@ export class Semantico {
   }
 
   acao14() {
-    console.log(this.pilhaTipos, this.tabelaSimbolos)
     const tipo = this.pilhaTipos.pop()!
+
+    if (tipo === 'int64') {
+      this.codigo.push('conv.i8')
+    }
 
     this.codigo.push(`call void [mscorlib]System.Console::Write(${tipo})`)
     this.pilhaTipos.push(tipo)
   }
 
-  acao15() {}
+  acao15() {
+    this.codigo.push('.entrypoint')
+  }
 
-  acao16() {}
+  acao16() {
+    this.codigo.push('ret')
+  }
 
   acao17() {
     const tipo1 = this.pilhaTipos.pop()
@@ -379,7 +385,6 @@ export class Semantico {
       this.pilhaTipos.push('int64')
     }
     this.codigo.push('div')
-    this.codigo.push('conv.i8')
   }
 
   acao20() {
@@ -399,7 +404,6 @@ export class Semantico {
       }
 
       this.codigo.push('rem')
-      this.codigo.push('conv.i8')
     }
   }
 
